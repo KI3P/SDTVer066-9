@@ -704,6 +704,7 @@ int antennaSelection[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 float SWR_PowerAdj[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 float SWRSlopeAdj[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 int SWR_R_Offset[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+int SWR_F_Offset[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 const char *topMenus[] = {
   "RF Set", "CW Options", "VFO Select",
   "EEPROM", "AGC", "Spectrum Options",
@@ -1301,6 +1302,8 @@ float goertzelMagnitude;
 float swr;
 float Pf_W;
 float Pr_W;
+float Pf_dBm;
+float Pr_dBm;
 int audioValuePrevious = 0;
 int CWOnState;
 
@@ -1762,8 +1765,6 @@ int switchFilterSideband = 0;
 int syncEEPROM;
 
 int termCursorXpos = 0;
-float transmitCWPowerLevel;
-float transmitSSBPowerLevel;
 int x2 = 0;  //AFP
 
 int zoom_sample_ptr = 0;
@@ -3011,7 +3012,9 @@ void setup_cw_transmit_mode() {
     Clk2SetFreq = (centerFreq + NCOFreq + CWToneOffsetsHz[EEPROMData.CWToneIndex]) * SI5351_FREQ_MULT;
   }
   sidetone_oscillator.amplitude(sidetoneVolume / 500);
-  SetRF_OutAtten(XAttenCW[currentBand] + powerOutCW[currentBand]);
+  XAttenCW[currentBand] = (int)round(2*(CWPowerCalibrationFactor[currentBand] 
+                  - 10*log10f(transmitPowerLevelCW / powerOutCW[currentBand])));
+  SetRF_OutAtten(XAttenCW[currentBand]);
   si5351.set_freq(Clk2SetFreq, SI5351_CLK2);
   digitalWrite(CW_ON_OFF, CW_OFF);   // LOW = CW off, HIGH = CW on
   digitalWrite(XMIT_MODE, XMIT_CW);  //
@@ -3361,7 +3364,7 @@ FASTRUN void loop()  // Replaced entire loop() with Greg's code  JJP  7/14/23
   }
 #endif
 
-  #ifdef DEBUG
+  /*#ifdef DEBUG
   // Print some status variables roughly every 10 seconds for debug purposes
   Ncnt += 1;
   if (Ncnt == 100){
@@ -3372,7 +3375,7 @@ FASTRUN void loop()  // Replaced entire loop() with Greg's code  JJP  7/14/23
     Serial.println("free  ram = " + String(freeram(),DEC));
     Serial.println("audio mem = " + String(AudioMemoryUsage(),DEC));
   }
-  #endif
+  #endif*/
 
   int pushButtonSwitchIndex = -1;
   valPin = ReadSelectedPushButton();  // Poll UI push buttons
@@ -3550,13 +3553,16 @@ FASTRUN void loop()  // Replaced entire loop() with Greg's code  JJP  7/14/23
           } else {
             cwstate = 0;
           }
+          if (cwstate){
+            read_SWR();
+            ShowCurrentPowerSetting();
+          }
           if (cwstate != cwstate_old) {
             if (cwstate) {
               // start transmitting
               start_sending_cw();
-read_SWR();
-ShowCurrentPowerSetting();
-
+              read_SWR();
+              ShowCurrentPowerSetting();
             } else {
               // Stop transmitting
               keyPressedOn = 0;

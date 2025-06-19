@@ -657,11 +657,11 @@ int RFOptions() {
 
       if (xmtMode == CW_MODE)  //AFP 10-13-22
       {
-        transmitPowerLevelCW = GetEncoderValueCW(-20, 20, transmitPowerLevelCW, 1, (char *)"Power: ");
+        transmitPowerLevelCW = GetEncoderValueCW(0.5, 20, transmitPowerLevelCW, 0.5, (char *)"Power: ");
         //powerOutCW[currentBand] = transmitPowerLevelCW;
-        powerOutCW[currentBand] = -0.017 * pow(transmitPowerLevelCW, 3) + 0.4501 * pow(transmitPowerLevelCW, 2) - 5.095 * (transmitPowerLevelCW) + 51.086;
-        EEPROMData.powerOutCW[currentBand] = powerOutCW[currentBand];  //AFP 10-21-22
-        //EEPROMWrite();//AFP 10-21-22
+        //powerOutCW[currentBand] = -0.017 * pow(transmitPowerLevelCW, 3) + 0.4501 * pow(transmitPowerLevelCW, 2) - 5.095 * (transmitPowerLevelCW) + 51.086;
+        XAttenCW[currentBand] = (int)round(2*(CWPowerCalibrationFactor[currentBand] 
+                  - 10*log10f(transmitPowerLevelCW / powerOutCW[currentBand])));
       } else  //AFP 10-13-22
       {
         if (xmtMode == SSB_MODE) {
@@ -739,7 +739,7 @@ int RFOptions() {
         } else {
           adjuster = XAttenCW[currentBand];
         }
-        tft.print((float)adjuster / 2.0, DEC);
+        tft.print((float)adjuster / 2.0, 1);
         while (true) {
           if (filterEncoderMove != 0) {
             adjuster = adjuster + filterEncoderMove;
@@ -748,7 +748,7 @@ int RFOptions() {
             SetRF_OutAtten(adjuster);
             tft.fillRect(SECONDARY_MENU_X + 180, MENUS_Y, 80, CHAR_HEIGHT, RA8875_MAGENTA);
             tft.setCursor(SECONDARY_MENU_X + 180, MENUS_Y + 1);
-            tft.print((float)adjuster / 2.0, 2);
+            tft.print((float)adjuster / 2.0, 1);
             filterEncoderMove = 0;
           }
           val = ReadSelectedPushButton();  // Read pin that controls all switches
@@ -767,6 +767,7 @@ int RFOptions() {
         }
         if (radioState == CW_RECEIVE_STATE) {
           XAttenCW[currentBand] = adjuster;
+          transmitPowerLevelCW = powerOutCW[currentBand] * pow(10, (CWPowerCalibrationFactor[currentBand] - (float)XAttenCW[currentBand]/2.0)/10.0 );
           //EEPROMData.XAttenCW[currentBand] = adjuster;
         }
         // These new values of attenuation will be applied in loop()

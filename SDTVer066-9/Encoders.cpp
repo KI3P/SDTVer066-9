@@ -797,7 +797,7 @@ int GetEncoderValuePower(int minValue, int maxValue, int startValue, int increme
   Return value;
     int                         the new value
 *****/
-float GetEncoderValueCW(float minValue, float maxValue, float startValue, int increment, char prompt[]) {
+float GetEncoderValueCW(float minValue, float maxValue, float startValue, float increment, char prompt[]) {
   int val;
 
   tft.setFontScale((enum RA8875tsize)1);
@@ -810,7 +810,7 @@ float GetEncoderValueCW(float minValue, float maxValue, float startValue, int in
 
   while (true) {
     if (filterEncoderMove != 0) {
-      startValue += filterEncoderMove * increment;  // Bump up or down...
+      startValue += (float)filterEncoderMove * increment;  // Bump up or down...
       if (startValue < minValue)
         startValue = minValue;
       else if (startValue > maxValue)
@@ -821,7 +821,7 @@ float GetEncoderValueCW(float minValue, float maxValue, float startValue, int in
       Serial.print("encoder powerOutSSB[currentBand]= ");
       Serial.println(startValue);
       //transmitPowerLevelCW  =-0.0001 * pow(startValue, 4)+ 0.0169 * pow(startValue, 3) - 0.8695 * pow(startValue, 2) + 18.522 * (startValue) -124.91;
-      tft.print(startValue, 0);
+      tft.print(startValue, 1);
 
       filterEncoderMove = 0;
     }

@@ -296,8 +296,9 @@ FLASHMEM void EEPROMWrite() {
     EEPROMData.RAtten[i] = RAtten[i];
     EEPROMData.antennaSelection[i] = antennaSelection[i];
     EEPROMData.SWR_PowerAdj[i] = SWR_PowerAdj[i];
-    EEPROMData.SWR_R_Offset[i] = SWRSlopeAdj[i];
+    EEPROMData.SWRSlopeAdj[i] = SWRSlopeAdj[i];
     EEPROMData.SWR_R_Offset[i] = SWR_R_Offset[i];
+    EEPROMData.SWR_F_Offset[i] = SWR_F_Offset[i];
     
   }
   //  Note:favoriteFreqs are written as they are saved.
@@ -981,6 +982,7 @@ FLASHMEM void EEPROMSaveDefaults2() {
     EEPROMData.SWR_PowerAdj[i] = 0;
     EEPROMData.SWRSlopeAdj[i] = 0;
     EEPROMData.SWR_R_Offset[i] = 0;
+    EEPROMData.SWR_F_Offset[i] = 0;
   }
 
   for (int i = 0; i < NUMBER_OF_BANDS; i++) {
@@ -1120,7 +1122,6 @@ FLASHMEM void EEPROMSaveDefaults2() {
 
   EEPROMData.TransmitPowerLevelCW = 0.0;
   EEPROMData.TransmitPowerLevelSSB = 0.0;
-  //EEPROMData.SWR_R_Offset2 = 0;
 }
 
 #if !defined(USE_JSON)

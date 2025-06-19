@@ -14,7 +14,7 @@
 #define COUPLER_ATTENUATION_DB 20
 #define PAD_ATTENUATION_DB 26
 #define SWR_REPETITIONS 1  // 100 repetitions takes roughly 100 ms
-#define VREF_MV 5000.0     // the reference voltage on your board
+#define VREF_MV 4096     // the reference voltage on your board
 
 
 
@@ -24,9 +24,13 @@ void read_SWR() {
   float adcF_sRaw=0;
   float adcR_sRaw=0;
   // Steo 1. Measure the peak forward and Reverse voltages
-  adcF_sRaw = (float)swrADC.readADCsingle(0);
-  adcR_sRaw = (float)swrADC.readADCsingle(1)+SWR_R_Offset[currentBand];
-   
+  for (size_t k=0; k<SWR_REPETITIONS; k++){
+    adcF_sRaw += (float)swrADC.readADCsingle(0)+SWR_F_Offset[currentBand];
+    adcR_sRaw += (float)swrADC.readADCsingle(1)+SWR_R_Offset[currentBand];
+  }
+  adcF_sRaw = adcF_sRaw/SWR_REPETITIONS;
+  adcR_sRaw = adcR_sRaw/SWR_REPETITIONS;
+
   //Serial.print("adcF_sRaw = ");
   //Serial.println(adcF_sRaw, 1); 
   //Serial.print("adcR_sRaw = ");
@@ -34,13 +38,20 @@ void read_SWR() {
   //Convert ADC reading to mV
   adcF_sRaw = adcF_sRaw * VREF_MV / 4096.;
   adcR_sRaw = adcR_sRaw * VREF_MV / 4096.;
-  //Serial.print("adcF_sRaw = ");
+  //Serial.print("adcF_mV = ");
   //Serial.println(adcF_sRaw, 1); 
   //Serial.print("adcR_sRaw = ");
   //Serial.println(adcR_sRaw, 1);
+  Pf_dBm = adcF_sRaw/25 - 84 + PAD_ATTENUATION_DB + COUPLER_ATTENUATION_DB;
+  Pr_dBm = adcR_sRaw/25 - 84 + PAD_ATTENUATION_DB + COUPLER_ATTENUATION_DB;
+
   // Convert to input voltage squared as read by ADC converted to before attenuation
-  //Pf_W=(float)pow(10,(adcF_sRaw/25 - 84 + PAD_ATTENUATION_DB + COUPLER_ATTENUATION_DB)/10)/1000;
-  //Pr_W=(float)pow(10,(adcR_sRaw/25 - 84 + PAD_ATTENUATION_DB + COUPLER_ATTENUATION_DB)/10)/1000;
+  Pf_W=(float)pow(10,Pf_dBm/10)/1000;
+  Pr_W=(float)pow(10,Pr_dBm/10)/1000;
+  //Serial.print("Pf_W = ");
+  //Serial.println(Pf_W,2);
+  //Serial.print("Pr_W = ");
+  //Serial.println(Pr_W,1);
   adcF_s = (float)pow(10,(adcF_sRaw/(25.+SWRSlopeAdj[currentBand]) - 84 + PAD_ATTENUATION_DB + COUPLER_ATTENUATION_DB+SWR_PowerAdj[currentBand])/10)*50/1000;  //84 is the zero intercept of the AD8307
   adcR_s = (float)pow(10,(adcR_sRaw/(25.+SWRSlopeAdj[currentBand]) - 84 + PAD_ATTENUATION_DB + COUPLER_ATTENUATION_DB+SWR_PowerAdj[currentBand])/10)*50/1000;
   //Serial.print("adcF_s volt sq= ");

@@ -862,6 +862,8 @@ extern float32_t combinedCoeff2Old;
 extern float swr;
 extern float Pf_W;
 extern float Pr_W;
+extern float Pf_dBm;
+extern float Pr_dBm;
 extern float ticMarkTimer;
 extern float ticMarkTimerOld;
 extern int CWOnState;      //AFP 05-17-22
@@ -1378,6 +1380,7 @@ extern struct config_t {
 float SWR_PowerAdj[NUMBER_OF_BANDS];
 float SWRSlopeAdj[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 int SWR_R_Offset[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+int SWR_F_Offset[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
 } EEPROMData;  //  Total:       438 bytes
 
@@ -2198,6 +2201,7 @@ extern float32_t slope_constant;
 extern float SWR_PowerAdj[];
 extern float SWRSlopeAdj[];
 extern int SWR_R_Offset[];
+extern int SWR_F_Offset[];
 extern float32_t spectrum_display_scale;  // 30.0
 extern float32_t stereo_factor;
 extern float32_t transmitPowerLevel;
@@ -2425,7 +2429,7 @@ void FreqShiftEx(long freqShiftAmt);
 float goertzel_mag(int numSamples, int TARGET_FREQUENCY, int SAMPLING_RATE, float *data);
 int GetEncoderValue(int minValue, int maxValue, int startValue, int increment, char prompt[]);
 int GetEncoderValuePower(int minValue, int maxValue, int startValue, int increment, char prompt[]);
-float GetEncoderValueCW(float minValue, float maxValue, float startValue, int increment, char prompt[]);
+float GetEncoderValueCW(float minValue, float maxValue, float startValue, float increment, char prompt[]);
 float GetEncoderValueLive(float minValue, float maxValue, float startValue, float increment, char prompt[]);  //AFP 10-22-22
 float GetEncoderValueLiveFreq(float minValue, float maxValue, float startValue, float increment, char prompt[], int Ndecimals);
 float GetEncoderValueLiveIQLevel(float minValue, float maxValue, float startValue, float increment, char prompt[]);

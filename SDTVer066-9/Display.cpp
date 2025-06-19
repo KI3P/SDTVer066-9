@@ -624,7 +624,7 @@ void BandInformation()  // SSB or CW
     void
 *****/
 void ShowCurrentPowerSetting() {
-  float transmitPowerLevelSSBTemp;
+  float transmitPowerLevelTemp;
   tft.setFontDefault();
   tft.setFontScale((enum RA8875tsize)0);
   tft.fillRect(OPERATION_STATS_X + 255, FREQUENCY_Y + 15, tft.getFontWidth() * 11, tft.getFontHeight(), RA8875_BLACK);  // Clear top-left menu area
@@ -633,17 +633,17 @@ void ShowCurrentPowerSetting() {
   tft.print("Set Pwr ");
   if (xmtMode == CW_MODE)  //AFP 10-13-22
   {
-   
-    tft.print((transmitPowerLevelCW), 0);
+    transmitPowerLevelTemp = powerOutCW[currentBand] * pow(10, (CWPowerCalibrationFactor[currentBand] - (float)XAttenCW[currentBand]/2.0)/10.0 );
+    tft.print(transmitPowerLevelTemp, 1);
   } else  //AFP 10-13-22
   {
     if (xmtMode == SSB_MODE) {
-      transmitPowerLevelSSBTemp = (0.0022 * pow((int)powerOutSSB[currentBand], 3) - 0.0598 * pow((int)powerOutSSB[currentBand], 2) - 0.2644 * ((int)powerOutSSB[currentBand]) + 13.7);
+      transmitPowerLevelTemp = (0.0022 * pow((int)powerOutSSB[currentBand], 3) - 0.0598 * pow((int)powerOutSSB[currentBand], 2) - 0.2644 * ((int)powerOutSSB[currentBand]) + 13.7);
       //Serial.print("show powerOutSSB[currentBand]= ");
       //Serial.println(powerOutSSB[currentBand]);
-      //Serial.print("show transmitPowerLevelSSBTemp]= ");
-      //Serial.println(transmitPowerLevelSSBTemp);
-      tft.print(round(transmitPowerLevelSSBTemp), 0);
+      //Serial.print("show transmitPowerLevelTemp]= ");
+      //Serial.println(transmitPowerLevelTemp);
+      tft.print(round(transmitPowerLevelTemp), 0);
     }
   }
   

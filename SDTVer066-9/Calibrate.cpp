@@ -1843,7 +1843,7 @@ void CW_PA_Calibrate() {
   tft.setCursor(50, 160);
   tft.print("Atten Setting");
   tft.setCursor(50, 190);
-  tft.print("Adjust Factor");
+  tft.print("Measured Power");
   //===========
   tft.setFontScale((enum RA8875tsize)0);
   tft.setTextColor(RA8875_CYAN);
@@ -1860,7 +1860,7 @@ void CW_PA_Calibrate() {
   tft.setCursor(25, 350);
   tft.print("* Press Key to start CW output");
   tft.setCursor(25, 365);
-  tft.print("* Adjust output level on Power Meter to match Set Point");
+  tft.print("* Adjust attenuation until external Power Meter matches Set Point");
   tft.setCursor(25, 380);
   tft.print("    using Filter Encoder");
   tft.setCursor(25, 395);
@@ -1869,29 +1869,35 @@ void CW_PA_Calibrate() {
   tft.print("* Press Select to Save/Exit");
 
   //================
-
+  powerOutCW[currentBand] = transmitPowerLevelCW;
+  SWR_F_Offset[currentBand] = 0;
+  float pfd[20] = {0};
+  uint8_t kp=0;
   while (1) {
     tft.setFontScale((enum RA8875tsize)1);
     tft.setTextColor(RA8875_CYAN);
+    //tft.setCursor(450, 130);
+    //powerOutCW[currentBand] = -0.017 * pow(transmitPowerLevelCW, 3) + 0.4501 * pow(transmitPowerLevelCW, 2) - 5.095 * (transmitPowerLevelCW) + 51.086;
     tft.setCursor(450, 130);
-    powerOutCW[currentBand] = -0.017 * pow(transmitPowerLevelCW, 3) + 0.4501 * pow(transmitPowerLevelCW, 2) - 5.095 * (transmitPowerLevelCW) + 51.086;
-    tft.setCursor(450, 130);
-    tft.print(transmitPowerLevelCW);
+    tft.print(powerOutCW[currentBand]);
     tft.print(" W");
     if (filterEncoderMove != 0) {
       XAttenCW[currentBand] += filterEncoderMove;
       filterEncoderMove = 0.;
+      if (XAttenCW[currentBand] > 63) XAttenCW[currentBand] = 63;
+      if (XAttenCW[currentBand] < 0) XAttenCW[currentBand] = 0;
     }
+    read_SWR();
     tft.fillRect(450, 160, 150, 35, RA8875_BLACK);
     tft.setCursor(450, 160);
-    tft.print(-powerOutCW[currentBand] / 2, 1);
+    tft.print((float)XAttenCW[currentBand]/2.0, 1);
     tft.print(" dB");
     tft.setCursor(450, 190);
     tft.fillRect(450, 190, 100, 35, RA8875_BLACK);
-    tft.print(-(float)XAttenCW[currentBand] / 2, 1);
-    tft.print(" dB");
-    SetRF_OutAtten(XAttenCW[currentBand] + powerOutCW[currentBand]);
-    EEPROMWrite();
+    tft.print(Pf_W, 1);
+    tft.print(" W");
+    SetRF_OutAtten(XAttenCW[currentBand]);
+    //EEPROMWrite();
     if (digitalRead(paddleDit) == LOW) {
       digitalWrite(RXTX, HIGH);  //Turns on relay
       si5351.output_enable(SI5351_CLK2, 1);
@@ -1899,6 +1905,8 @@ void CW_PA_Calibrate() {
       digitalWrite(CAL, CAL_OFF);  // Route signal to TX output
       radioState = CW_TRANSMIT_STRAIGHT_STATE;
       ShowTransmitReceiveStatus();
+      pfd[kp++] = Pf_dBm;
+      if(kp == 20) kp = 0;
     } else {
       if (digitalRead(paddleDit) == HIGH) {
         digitalWrite(RXTX, LOW);  //Turns on relay
@@ -1915,7 +1923,28 @@ void CW_PA_Calibrate() {
       val = ProcessButtonPress(val);  // Use ladder value to get menu choice
       if (val == MENU_OPTION_SELECT)  // Yep. Make a choice??
       {
-        lastState = CW_TRANSMIT_STRAIGHT_STATE;;
+        CWPowerCalibrationFactor[currentBand] = (float)XAttenCW[currentBand]/2.0;
+        float pfdt = 0;
+        for (size_t k =0; k<20; k++){
+          pfdt += pfd[k];
+        }
+        pfdt = pfdt / 20;
+        //Serial.print("Pf_dBm = ");
+        //Serial.println(pfdt,2);
+
+        float Pactual = 10*log10f(1000*powerOutCW[currentBand]);
+        //Serial.print("Pact_dBm = ");
+        //Serial.println(Pactual,2);
+
+        float delta = Pactual - pfdt;
+        int C = (int)(25*delta);
+        //Serial.print("Delta_dBm = ");
+        //Serial.println(delta,2);
+        //Serial.print("Correction = ");
+        //Serial.println(C);
+        SWR_F_Offset[currentBand] = C;
+
+        lastState = CW_TRANSMIT_STRAIGHT_STATE;
        // centerFreq = centerFreq + IFFreq - NCOFreq;
        // SetFreq();
         twoToneFlag = 0;
