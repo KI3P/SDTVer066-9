@@ -1871,7 +1871,8 @@ void CW_PA_Calibrate() {
   //================
   powerOutCW[currentBand] = transmitPowerLevelCW;
   SWR_F_Offset[currentBand] = 0;
-  float pfd[20] = {0};
+  #define NPF 10
+  float pfd[NPF] = {0};
   uint8_t kp=0;
   while (1) {
     tft.setFontScale((enum RA8875tsize)1);
@@ -1883,7 +1884,7 @@ void CW_PA_Calibrate() {
     tft.print(" W");
     if (filterEncoderMove != 0) {
       XAttenCW[currentBand] += filterEncoderMove;
-      filterEncoderMove = 0.;
+      filterEncoderMove = 0;
       if (XAttenCW[currentBand] > 63) XAttenCW[currentBand] = 63;
       if (XAttenCW[currentBand] < 0) XAttenCW[currentBand] = 0;
       SetRF_OutAtten(XAttenCW[currentBand]);
@@ -1906,7 +1907,7 @@ void CW_PA_Calibrate() {
       radioState = CW_TRANSMIT_STRAIGHT_STATE;
       ShowTransmitReceiveStatus();
       pfd[kp++] = Pf_dBm;
-      if(kp == 20) kp = 0;
+      if(kp == NPF) kp = 0;
     } else {
       if (digitalRead(paddleDit) == HIGH) {
         digitalWrite(RXTX, LOW);  //Turns on relay
@@ -1926,10 +1927,10 @@ void CW_PA_Calibrate() {
         CWPowerCalibrationFactor[currentBand] = (float)XAttenCW[currentBand]/2.0;
         // Intercept correction for the forward power channel
         float pfdt = 0;
-        for (size_t k =0; k<20; k++){
+        for (size_t k =0; k<NPF; k++){
           pfdt += pfd[k];
         }
-        pfdt = pfdt / 20;
+        pfdt = pfdt / NPF;
         //Serial.print("Pf_dBm = ");
         //Serial.println(pfdt,2);
 
@@ -1941,8 +1942,8 @@ void CW_PA_Calibrate() {
         int C = (int)(25*delta);
         //Serial.print("Delta_dBm = ");
         //Serial.println(delta,2);
-        //Serial.print("Correction = ");
-        //Serial.println(C);
+        Serial.print("Correction = ");
+        Serial.println(C);
         SWR_F_Offset[currentBand] = C;
 
         lastState = CW_TRANSMIT_STRAIGHT_STATE;
@@ -1992,7 +1993,7 @@ void SSB_PA_Calibrate() {
   twoToneFlag = 0;
   IQCalFlag = 0;
   SSB_PA_CalFlag = 1;  //Internal Source
-  float transmitPowerLevelSSBTemp;
+  //float transmitPowerLevelSSBTemp;
   powerOutSSB[currentBand] = transmitPowerLevelSSB;
 
   xrState = TRANSMIT_STATE;
@@ -2128,7 +2129,7 @@ void SSB_PA_Calibrate() {
 }
 
 /*****
-  Purpose: Calibrate CW PA Power output
+  Purpose: SWR calibration
    Parameter List:
       void
    Return value:

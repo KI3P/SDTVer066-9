@@ -3463,7 +3463,6 @@ FASTRUN void loop()  // Replaced entire loop() with Greg's code  JJP  7/14/23
         SetFreq();
         digitalWrite(XMIT_MODE, XMIT_SSB);  // KI3P, July 28, 2024
         setBPFPath(BPF_IN_TX_PATH);
-        //SetRF_OutAtten(powerOutSSB[currentBand]);
         SetRF_OutAtten(XAttenSSB[currentBand]);
         digitalWrite(RXTX, HIGH);  //xmit on
         xrState = TRANSMIT_STATE;
@@ -3481,10 +3480,6 @@ FASTRUN void loop()  // Replaced entire loop() with Greg's code  JJP  7/14/23
         //ShowTransmitReceiveStatus();
 
         while (digitalRead(PTT) == LOW) {
-          //SetRF_OutAtten(powerOutSSB[currentBand]);
-          //SetRF_OutAtten(XAttenSSB[currentBand]);
-          //Serial.print(" RF Options after powerOutSSB[currentBand]= ");
-          //Serial.println(powerOutSSB[currentBand]);
           //ShowTXAudio();
           ExciterIQData();
           read_SWR();

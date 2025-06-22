@@ -169,6 +169,8 @@ FLASHMEM void EEPROMRead() {
     antennaSelection[i] = EEPROMData.antennaSelection[i];
     SWR_PowerAdj[i] = EEPROMData.SWR_PowerAdj[i];
     SWRSlopeAdj[i] = EEPROMData.SWRSlopeAdj[i];
+    SWR_R_Offset[i] = EEPROMData.SWR_R_Offset[i];
+    SWR_F_Offset[i] = EEPROMData.SWR_F_Offset[i];
   }
   for (int i = 0; i < MAX_FAVORITES; i++) {
     favoriteFrequencies[i] = EEPROMData.favoriteFreqs[i];
@@ -518,6 +520,20 @@ FLASHMEM void EEPROMShow() {
     Serial.print(i);
     Serial.print(F("] = "));
     Serial.println(EEPROMData.RAtten[i], 5);
+  }
+  Serial.println(F(" "));
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) {
+    Serial.print(F("           SWR_F_Offset["));
+    Serial.print(i);
+    Serial.print(F("] = "));
+    Serial.println(EEPROMData.SWR_F_Offset[i]);
+  }
+  Serial.println(F(" "));
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) {
+    Serial.print(F("           SWR_R_Offset["));
+    Serial.print(i);
+    Serial.print(F("] = "));
+    Serial.println(EEPROMData.SWR_R_Offset[i]);
   }
   Serial.println(F(" "));
   for (int i = 0; i < NUMBER_OF_BANDS; i++) {
@@ -993,47 +1009,9 @@ FLASHMEM void EEPROMSaveDefaults2() {
     EEPROMData.powerOutSSB[i] = 5.0;
   }
 
-  EEPROMData.CWPowerCalibrationFactor[0] = 0.023;  //V12HW
-  EEPROMData.CWPowerCalibrationFactor[1] = 0.023;  //V12HW
-  EEPROMData.CWPowerCalibrationFactor[2] = 0.023;  //AFP 10-29-22
-  EEPROMData.CWPowerCalibrationFactor[3] = 0.023;  //AFP 10-29-22
-  EEPROMData.CWPowerCalibrationFactor[4] = 0.038;  //AFP 10-29-22
-  EEPROMData.CWPowerCalibrationFactor[5] = 0.052;  //AFP 10-29-22
-  EEPROMData.CWPowerCalibrationFactor[6] = 0.051;  //AFP 10-29-22
-  EEPROMData.CWPowerCalibrationFactor[7] = 0.028;  //AFP 10-29-22
-  EEPROMData.CWPowerCalibrationFactor[8] = 0.028;  //AFP 10-29-22
-  EEPROMData.CWPowerCalibrationFactor[9] = 0.028;  //V12HW
-  if (NUMBER_OF_BANDS > 10) {
-    EEPROMData.CWPowerCalibrationFactor[10] = 0.028;  //V12HW
-    EEPROMData.CWPowerCalibrationFactor[11] = 0.028;  //V12HW
-    EEPROMData.CWPowerCalibrationFactor[12] = 0.028;  //V12HW
-    EEPROMData.CWPowerCalibrationFactor[13] = 0.028;  //V12HW
-    EEPROMData.CWPowerCalibrationFactor[14] = 0.028;  //V12HW
-    EEPROMData.CWPowerCalibrationFactor[15] = 0.028;  //V12HW
-    EEPROMData.CWPowerCalibrationFactor[16] = 0.028;  //V12HW
-    EEPROMData.CWPowerCalibrationFactor[17] = 0.028;  //V12HW
-  }
-
-
-  EEPROMData.SSBPowerCalibrationFactor[0] = 0.017;  //AFP 10-29-22
-  EEPROMData.SSBPowerCalibrationFactor[1] = 0.017;  //AFP 10-29-22
-  EEPROMData.SSBPowerCalibrationFactor[2] = 0.017;  //AFP 10-29-22
-  EEPROMData.SSBPowerCalibrationFactor[3] = 0.019;  //AFP 10-29-22
-  EEPROMData.SSBPowerCalibrationFactor[4] = 0.017;  //AFP 10-29-22
-  EEPROMData.SSBPowerCalibrationFactor[5] = 0.019;  //AFP 10-29-22
-  EEPROMData.SSBPowerCalibrationFactor[6] = 0.021;  //AFP 10-29-22
-  EEPROMData.SSBPowerCalibrationFactor[7] = 0.020;  //AFP 10-29-22
-  EEPROMData.SSBPowerCalibrationFactor[8] = 0.022;  //AFP 10-29-22
-  EEPROMData.SSBPowerCalibrationFactor[9] = 0.022;  //V12HW
-  if (NUMBER_OF_BANDS > 10) {
-    EEPROMData.SSBPowerCalibrationFactor[10] = 0.022;  //V12HW
-    EEPROMData.SSBPowerCalibrationFactor[11] = 0.022;  //V12HW
-    EEPROMData.SSBPowerCalibrationFactor[12] = 0.022;  //V12HW
-    EEPROMData.SSBPowerCalibrationFactor[13] = 0.022;  //V12HW
-    EEPROMData.SSBPowerCalibrationFactor[14] = 0.022;  //V12HW
-    EEPROMData.SSBPowerCalibrationFactor[15] = 0.022;  //V12HW
-    EEPROMData.SSBPowerCalibrationFactor[16] = 0.022;  //V12HW
-    EEPROMData.SSBPowerCalibrationFactor[17] = 0.022;  //V12HW
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) {
+    EEPROMData.CWPowerCalibrationFactor[i] = 15;
+    EEPROMData.SSBPowerCalibrationFactor[i] = 8.5;
   }
 
   // simplified - V12HW
