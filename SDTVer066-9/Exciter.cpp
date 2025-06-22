@@ -87,12 +87,12 @@ void ExciterIQData() {
         break;
 
       case (2):  // //Sine wave generator for transmit IQ Calibrate and Transmit SSB power calibrate
-        arm_scale_f32(sinBuffer6, .03, float_buffer_L_EX, 256);
-        arm_scale_f32(sinBuffer6, .03, float_buffer_R_EX, 256);
+        arm_scale_f32(sinBuffer6, .075, float_buffer_L_EX, 256);
+        arm_scale_f32(sinBuffer6, .075, float_buffer_R_EX, 256);
         break;
     }
-   arm_scale_f32(float_buffer_L_EX, (float)XAttenSSB[currentBand] / 10, float_buffer_L_EX, 256);
-    arm_scale_f32(float_buffer_R_EX, (float)XAttenSSB[currentBand] / 10, float_buffer_R_EX, 256);
+    //arm_scale_f32(float_buffer_L_EX, (float)XAttenSSB[currentBand] / 10, float_buffer_L_EX, 256);
+    //arm_scale_f32(float_buffer_R_EX, (float)XAttenSSB[currentBand] / 10, float_buffer_R_EX, 256);
 
     //============================  Transmit EQ  ========================  AFP 10-02-22
     if (xmitEQFlag == ON) {

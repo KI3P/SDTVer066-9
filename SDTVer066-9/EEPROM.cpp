@@ -975,8 +975,8 @@ FLASHMEM void EEPROMSaveDefaults2() {
 
 
   for (int i = 0; i < NUMBER_OF_BANDS; i++) {
-    EEPROMData.XAttenCW[i] = 0;
-    EEPROMData.XAttenSSB[i] = 10;
+    EEPROMData.XAttenCW[i] = 15;
+    EEPROMData.XAttenSSB[i] = 8.5;
     EEPROMData.RAtten[i] = 0;
     EEPROMData.antennaSelection[i] = 0;
     EEPROMData.SWR_PowerAdj[i] = 0;
@@ -986,11 +986,11 @@ FLASHMEM void EEPROMSaveDefaults2() {
   }
 
   for (int i = 0; i < NUMBER_OF_BANDS; i++) {
-    EEPROMData.powerOutCW[i] = 0.0;
+    EEPROMData.powerOutCW[i] = 5.0;
   }
 
   for (int i = 0; i < NUMBER_OF_BANDS; i++) {
-    EEPROMData.powerOutSSB[i] = 1.0;
+    EEPROMData.powerOutSSB[i] = 5.0;
   }
 
   EEPROMData.CWPowerCalibrationFactor[0] = 0.023;  //V12HW

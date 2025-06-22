@@ -1812,7 +1812,7 @@ void TwoToneTest() {  //AFP 02-01-25
 }
 
 /*****
-  Purpose: Calibrate SSB PA Power output
+  Purpose: Calibrate CW PA Power output
    Parameter List:
       void
    Return value:
@@ -1886,6 +1886,7 @@ void CW_PA_Calibrate() {
       filterEncoderMove = 0.;
       if (XAttenCW[currentBand] > 63) XAttenCW[currentBand] = 63;
       if (XAttenCW[currentBand] < 0) XAttenCW[currentBand] = 0;
+      SetRF_OutAtten(XAttenCW[currentBand]);
     }
     read_SWR();
     tft.fillRect(450, 160, 150, 35, RA8875_BLACK);
@@ -1896,7 +1897,6 @@ void CW_PA_Calibrate() {
     tft.fillRect(450, 190, 100, 35, RA8875_BLACK);
     tft.print(Pf_W, 1);
     tft.print(" W");
-    SetRF_OutAtten(XAttenCW[currentBand]);
     //EEPROMWrite();
     if (digitalRead(paddleDit) == LOW) {
       digitalWrite(RXTX, HIGH);  //Turns on relay
@@ -1924,6 +1924,7 @@ void CW_PA_Calibrate() {
       if (val == MENU_OPTION_SELECT)  // Yep. Make a choice??
       {
         CWPowerCalibrationFactor[currentBand] = (float)XAttenCW[currentBand]/2.0;
+        // Intercept correction for the forward power channel
         float pfdt = 0;
         for (size_t k =0; k<20; k++){
           pfdt += pfd[k];
@@ -1970,7 +1971,7 @@ void CW_PA_Calibrate() {
   }
 }
 /*****
-  Purpose: Calibrate CW PA Power output
+  Purpose: Calibrate SSB PA Power output
 
    Parameter List:
       void
@@ -1986,12 +1987,13 @@ void SSB_PA_Calibrate() {
   Q_in_L_Ex.begin();
   Q_in_R_Ex.begin();
   setBPFPath(BPF_IN_TX_PATH);
-  SetRF_OutAtten(powerOutSSB[currentBand]);
-
+  //SetRF_OutAtten(powerOutSSB[currentBand]);
+  SetRF_OutAtten(XAttenSSB[currentBand]);
   twoToneFlag = 0;
   IQCalFlag = 0;
   SSB_PA_CalFlag = 1;  //Internal Source
   float transmitPowerLevelSSBTemp;
+  powerOutSSB[currentBand] = transmitPowerLevelSSB;
 
   xrState = TRANSMIT_STATE;
   radioState = SSB_TRANSMIT_STATE;
@@ -2010,8 +2012,6 @@ void SSB_PA_Calibrate() {
   tft.setCursor(50, 95);
   tft.print("SSB Power Set Point");
   tft.setCursor(50, 125);
-  tft.print("Correction Factor");
-  tft.setCursor(50, 155);
   tft.print("Attenuator Setting");
   //===========
   tft.setFontScale((enum RA8875tsize)0);
@@ -2025,13 +2025,13 @@ void SSB_PA_Calibrate() {
   tft.setCursor(25, 250);
   tft.print("* Set Mode to SSB & Attach switch to PPT");
   tft.setCursor(25, 265);
-  tft.print("* Adjust SSB Power Level to 10W - Menu: RF Set/Power level");
+  tft.print("* Adjust SSB Power Level to 5W - Menu: RF Set/Power level");
   tft.setCursor(25, 280);
   tft.print("* Select: Calibrate/SSB PA Cal from menu");
   tft.setCursor(25, 295);
   tft.print("* Uses Internal Source, press Key/switch");
   tft.setCursor(25, 310);
-  tft.print("* Set level to 10W on External Power Meter");
+  tft.print("* Adjust attenuation until 5W measured on External Power Meter");
   tft.setCursor(25, 325);
   tft.print("* Press Select to Save/Exit");
   tft.setCursor(25, 340);
@@ -2039,11 +2039,7 @@ void SSB_PA_Calibrate() {
   tft.setCursor(25, 355);
   tft.print("* Press PTT & speak into Mic");
   tft.setCursor(25, 370);
-  tft.print("* Adjust Mic Gain fo achieve desired output");
-  tft.setCursor(25, 385);
-  tft.print("  using Vol switch adjustment: Mic option");
-  tft.setCursor(25, 400);
-  tft.print("* Use RF /Power set to new output level");
+  tft.print("* Adjust Mic Gain to achieve 5W output");
 
   modeSelectInR.gain(0, 0);
   modeSelectInL.gain(0, 0);
@@ -2058,22 +2054,21 @@ void SSB_PA_Calibrate() {
     tft.setFontScale((enum RA8875tsize)1);
     tft.setTextColor(RA8875_CYAN);
     tft.setCursor(450, 95);
-    transmitPowerLevelSSBTemp = (0.0022 * pow((int)powerOutSSB[currentBand], 3) - 0.0598 * pow((int)powerOutSSB[currentBand], 2) - 0.2644 * ((int)powerOutSSB[currentBand]) + 13.7);
-    tft.print(round(transmitPowerLevelSSBTemp), 0);
+    tft.print(powerOutSSB[currentBand], 1);
     tft.print(" W");
     while (digitalRead(PTT) == LOW) {
 
       if (filterEncoderMove != 0) {
         XAttenSSB[currentBand] += filterEncoderMove;
         filterEncoderMove = 0.;
+        if (XAttenSSB[currentBand] > 63) XAttenSSB[currentBand] = 63;
+        if (XAttenSSB[currentBand] < 0) XAttenSSB[currentBand] = 0;
+        SetRF_OutAtten(XAttenSSB[currentBand]);
       }
+      read_SWR();
       tft.fillRect(450, 125, 100, 35, RA8875_BLACK);
       tft.setCursor(450, 125);
-      tft.print(20 * log((float)XAttenSSB[currentBand] / 10), 1);
-      tft.print(" dB");
-      tft.fillRect(450, 155, 100, 35, RA8875_BLACK);
-      tft.setCursor(450, 155);
-      tft.print(-powerOutSSB[currentBand] / 2);
+      tft.print((float)XAttenSSB[currentBand]/2.0, 1);
       tft.print(" dB");
       digitalWrite(RXTX, HIGH);  //xmit on
       xrState = TRANSMIT_STATE;
@@ -2087,6 +2082,7 @@ void SSB_PA_Calibrate() {
       val = ProcessButtonPress(val);  // Use ladder value to get menu choice
       if (val == MENU_OPTION_SELECT)  // Yep. Make a choice??
       {
+        SSBPowerCalibrationFactor[currentBand] = (float)XAttenSSB[currentBand]/2.0;
         lastState = SSB_TRANSMIT_STATE;
         centerFreq = centerFreq + IFFreq - NCOFreq;
         SetFreq();

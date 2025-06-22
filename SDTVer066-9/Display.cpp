@@ -638,12 +638,8 @@ void ShowCurrentPowerSetting() {
   } else  //AFP 10-13-22
   {
     if (xmtMode == SSB_MODE) {
-      transmitPowerLevelTemp = (0.0022 * pow((int)powerOutSSB[currentBand], 3) - 0.0598 * pow((int)powerOutSSB[currentBand], 2) - 0.2644 * ((int)powerOutSSB[currentBand]) + 13.7);
-      //Serial.print("show powerOutSSB[currentBand]= ");
-      //Serial.println(powerOutSSB[currentBand]);
-      //Serial.print("show transmitPowerLevelTemp]= ");
-      //Serial.println(transmitPowerLevelTemp);
-      tft.print(round(transmitPowerLevelTemp), 0);
+      transmitPowerLevelTemp = powerOutSSB[currentBand] * pow(10, (SSBPowerCalibrationFactor[currentBand] - (float)XAttenSSB[currentBand]/2.0)/10.0 );
+      tft.print(round(transmitPowerLevelTemp), 1);
     }
   }
   

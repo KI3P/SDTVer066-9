@@ -655,23 +655,17 @@ int RFOptions() {
   switch (secondaryMenuIndex) {
     case 0:  // Power Level JJP 11/17/23 JJP
 
-      if (xmtMode == CW_MODE)  //AFP 10-13-22
+      if (xmtMode == CW_MODE)
       {
         transmitPowerLevelCW = GetEncoderValueCW(0.5, 20, transmitPowerLevelCW, 0.5, (char *)"Power: ");
-        //powerOutCW[currentBand] = transmitPowerLevelCW;
-        //powerOutCW[currentBand] = -0.017 * pow(transmitPowerLevelCW, 3) + 0.4501 * pow(transmitPowerLevelCW, 2) - 5.095 * (transmitPowerLevelCW) + 51.086;
         XAttenCW[currentBand] = (int)round(2*(CWPowerCalibrationFactor[currentBand] 
                   - 10*log10f(transmitPowerLevelCW / powerOutCW[currentBand])));
-      } else  //AFP 10-13-22
+      } else
       {
         if (xmtMode == SSB_MODE) {
-          Serial.print(" RF Options before powerOutSSB[currentBand]= ");
-          Serial.println(powerOutSSB[currentBand]);
-          powerOutSSB[currentBand] = GetEncoderValuePower(0, 63, powerOutSSB[currentBand], 1, (char *)"Power");
-          Serial.print(" RF Options after powerOutSSB[currentBand]= ");
-          Serial.println(powerOutSSB[currentBand]);
-
-          EEPROMData.powerOutSSB[currentBand] = powerOutSSB[currentBand];  //AFP 10-21-22
+          transmitPowerLevelSSB = GetEncoderValueCW(0.5, 20, transmitPowerLevelSSB, 0.5, (char *)"Power: ");
+          XAttenSSB[currentBand] = (int)round(2*(SSBPowerCalibrationFactor[currentBand] 
+                  - 10*log10f(transmitPowerLevelSSB / powerOutSSB[currentBand])));
         }
       }
       //EEPROMData.powerLevel = transmitPowerLevel;  //AFP 10-21-22
@@ -763,6 +757,7 @@ int RFOptions() {
         // to this menu when we're in receive state.
         if (radioState == SSB_RECEIVE_STATE) {
           XAttenSSB[currentBand] = adjuster;
+          transmitPowerLevelSSB = powerOutSSB[currentBand] * pow(10, (SSBPowerCalibrationFactor[currentBand] - (float)XAttenSSB[currentBand]/2.0)/10.0 );
           //EEPROMData.XAttenSSB[currentBand] = adjuster;
         }
         if (radioState == CW_RECEIVE_STATE) {

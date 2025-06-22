@@ -24,7 +24,7 @@ void read_SWR() {
   float adcF_sRaw=0;
   float adcR_sRaw=0;
   // Steo 1. Measure the peak forward and Reverse voltages
-  for (size_t k=0; k<SWR_REPETITIONS; k++){
+  for (size_t k=0; k<SWR_REPETITIONS; k++){ // each repetition takes ~1ms
     adcF_sRaw += (float)swrADC.readADCsingle(0)+SWR_F_Offset[currentBand];
     adcR_sRaw += (float)swrADC.readADCsingle(1)+SWR_R_Offset[currentBand];
   }
