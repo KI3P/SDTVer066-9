@@ -23,8 +23,8 @@ static float adcR_sRawOld;
 void read_SWR() {
 
   // Step 1. Measure the peak forward and Reverse voltages
-  float adcF_sRaw = (float)swrADC.readADCsingle(0);
-  float adcR_sRaw = (float)swrADC.readADCsingle(1);
+  adcF_sRaw = (float)swrADC.readADCsingle(0);
+  adcR_sRaw = (float)swrADC.readADCsingle(1);
 
   adcF_sRaw = 0.1 * adcF_sRaw + 0.9 * adcF_sRawOld;  //Running average
   adcR_sRaw = 0.1 * adcR_sRaw + 0.9 * adcR_sRawOld;

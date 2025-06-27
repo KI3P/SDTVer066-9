@@ -2136,288 +2136,135 @@ void SSB_PA_Calibrate() {
       void
  *****/
 void DoSWRCal() {
-  twoToneFlag = 0;
-  SSB_PA_CalFlag = 0;
-  IQCalFlag = 1;
-  int task = -100;
-  int lastUsedTask = -2;
-  static int val;
-  static int corrChange;
-  int XmitCalDirections = 0;
-  float correctionIncrement2 = 0.1;
-  float lastSWR_PowerAdj;
-  float lastSWRGainAdj;
-  int lastSWR_R_Offset;
-  SWRCalFlag = 1;
-
-  Q_in_L.end();  //Set up input Queues for transmit
-  Q_in_R.end();
-  Q_in_L_Ex.begin();
-  Q_in_R_Ex.begin();
-  comp1.setPreGain_dB(10);
-  comp2.setPreGain_dB(10);
-  sgtl5000_1.micGain(currentMicGain);
+  int val = 0;
+  Clk2SetFreq = (centerFreq + NCOFreq + CWToneOffsetsHz[EEPROMData.CWToneIndex]) * SI5351_FREQ_MULT;
+  tft.clearScreen(RA8875_BLACK);
+  si5351.set_freq(Clk2SetFreq, SI5351_CLK2);
+  digitalWrite(CW_ON_OFF, CW_OFF);   // LOW = CW off, HIGH = CW on
+  digitalWrite(XMIT_MODE, XMIT_CW);  //
   setBPFPath(BPF_IN_TX_PATH);
-  SSB_PA_CalFlag = 0;
-  twoToneFlag = 0;
-  IQCalFlag = 0;
-  /*if (compressorFlag == 1) {
-          SetupMyCompressors(use_HP_filter, (float)currentMicThreshold, comp_ratio, attack_sec, release_sec);  // Cast currentMicThreshold to float.  KF5N, October 31, 2023
-        } else {
-          if (compressorFlag == 0) {
-            SetupMyCompressors(use_HP_filter, 0.0, comp_ratio, 0.01, 0.01);
-          }
-        }*/
-  xrState = TRANSMIT_STATE;
-  centerFreq = centerFreq - IFFreq + NCOFreq;
-  SetFreq();
-  digitalWrite(XMIT_MODE, XMIT_SSB);  // KI3P, July 28, 2024
-  //setBPFPath(BPF_IN_TX_PATH);
-  SetRF_OutAtten(powerOutSSB[currentBand]);
-  digitalWrite(RXTX, HIGH);  //xmit on
-  xrState = TRANSMIT_STATE;
   modeSelectInR.gain(0, 0);
   modeSelectInL.gain(0, 0);
-  modeSelectInExR.gain(0, 1);
-  modeSelectInExL.gain(0, 1);
+  modeSelectInExR.gain(0, 0);
   modeSelectOutL.gain(0, 0);
   modeSelectOutR.gain(0, 0);
-  //modeSelectOutExL.gain(0, (float)XAttenSSB[currentBand] / 10.0);  //AFP 10-21-22
-  //modeSelectOutExR.gain(0, (float)XAttenSSB[currentBand] / 10.0);
-
-  modeSelectOutExL.gain(0, 1);  //AFP 10-21-22
-  modeSelectOutExR.gain(0, 1);
-  //ShowTransmitReceiveStatus();
-
-  //========== Screen print directons
-  tft.clearScreen(RA8875_BLACK);
-  tft.writeTo(L2);  // Erase the bandwidth bar.   August 16, 2023
-  tft.clearMemory();
-  tft.writeTo(L1);
-  tft.setTextColor(RA8875_WHITE);
+  modeSelectOutExL.gain(0, 0);
+  modeSelectOutExR.gain(0, 0);
   tft.setFontScale((enum RA8875tsize)1);
-  tft.setCursor(100, 10);
-  tft.print("Calibrate SWR/Power");
-
-  //========
-  tft.setTextColor(RA8875_YELLOW);
-
-  tft.setCursor(465, 80);
+  tft.setTextColor(RA8875_GREEN);
+  tft.setCursor(150, 70);
+  tft.print("Calibrate SWR");
+  tft.setTextColor(RA8875_CYAN);
+  tft.setCursor(50, 130);
+  tft.print("Forward Power");
+  tft.setCursor(50, 160);
+  tft.print("Reflected Power");
+  tft.setCursor(50, 190);
+  tft.print("Reflected Cal Factor");
+  //===========
   tft.setFontScale((enum RA8875tsize)0);
-  tft.print("Incr ");
-  tft.fillRect(550, 80, 50, tft.getFontHeight(), RA8875_BLACK);
-  tft.setCursor(550, 80);
-  tft.print(correctionIncrement2, 3);
-  tft.setFontScale((enum RA8875tsize)1);
-  tft.setTextColor(RA8875_WHITE);
+  tft.setTextColor(RA8875_CYAN);
+  uint16_t ystart = 290;
+  uint16_t deltay = 15;
+  uint16_t yi = ystart;
+  tft.setCursor(10, ystart-20);
+  tft.print("Directions ");
+  tft.setCursor(25, yi+=deltay);
+  tft.print("* Perform CW PA Cal before doing SWR cal");
+  tft.setCursor(25, yi+=deltay);
+  tft.print("* Connect T41 Antenna to 100 Ohm dummy load");
+  tft.setCursor(25, yi+=deltay);
+  tft.print("* Attach Key");
+  tft.setCursor(25, yi+=deltay);
+  tft.print("* Select: Calibrate/SWR Cal from menu");
+  tft.setCursor(25, yi+=deltay);
+  tft.print("* Press Key to start CW output");
+  tft.setCursor(25, yi+=deltay);
+  tft.print("* Hold key down for 5 seconds");
+  tft.setCursor(25, yi+=deltay);
+  tft.print("* Release Key");
+  tft.setCursor(25, yi+=deltay);
+  tft.print("* Press Select to Save/Exit");
 
-  //====================
+  SWR_R_Offset[currentBand] = 0;
+  float C = 0;
   while (1) {
-    //=================
-    val = ReadSelectedPushButton();
-    if (val != BOGUS_PIN_READ) {
-      val = ProcessButtonPress(val);
-      if (val != lastUsedTask && task == -100) task = val;
-      else task = BOGUS_PIN_READ;
-    }
-    switch (task) {
-      case (CAL_DIRECTIONS):  //Filter
-        {
-          XmitCalDirections = !XmitCalDirections;
-          if (XmitCalDirections != 0) {
-            tft.setFontScale((enum RA8875tsize)0);
-            tft.setTextColor(RA8875_CYAN);
-            tft.setCursor(10, 100);
-            tft.print("Directions ");
-            tft.setCursor(25, 115);
-            tft.print("* Connect T41 Antenna to Power Meter & DL");
-            tft.setCursor(25, 130);
-            tft.print("* Input signal to Mic Jack");
-            tft.setCursor(25, 145);
-            tft.print("* Attach Key/SW to PTT");
-            tft.setCursor(25, 160);
-            tft.print("* Select: Calibrate/SWR Cal from menu");
-            tft.setCursor(25, 175);
-            tft.print("* Press PTT SW to start output");
-            tft.setCursor(25, 190);
-            tft.print("* Adjust output level on Power Meter to 10W");
-            tft.setCursor(25, 205);
-            tft.print("* User Filter En to set Pwr reading to = output");
-            tft.setCursor(25, 220);
-            tft.print("* Adjust output level on Power Meter to 2W");
-            tft.setCursor(25, 235);
-            tft.print("* Using Vol En set Pwr reading to 2Wr");
-            tft.setCursor(25, 250);
-            tft.print("* Repeat last 2 steps as needed");
-            tft.setCursor(25, 265);
-            tft.print("* Set DL resistance to 100 ohms");
-            tft.setCursor(25, 280);
-            tft.print("* Press User to switch Vol to Offset");
-            tft.setCursor(25, 295);
-            tft.print("*Adj Offset for SWR = 2.0");
-            tft.setCursor(25, 310);
-            tft.print("* Press Select to Save/Exit");
-          } else {
-            tft.fillRect(0, 100, 408, 321, RA8875_BLACK);
-            //tft.fillRect(288, 50, 150, 192, RA8875_BLACK);
-          }
-          break;
-        }
-      default:
-        break;
-    }                                     // End switch
-    if (task != -1) lastUsedTask = task;  //  Save the last used task.
-    task = -100;
-
-    tft.setFontScale((enum RA8875tsize)0);
-    tft.setTextColor(RA8875_GREEN);
-    tft.setCursor(465, 100);
-    tft.print("User2 -Toggle");
-    tft.setCursor(465, 115);
-    tft.print("    Vol EN PowerAdj/SWR Gain Adj");
-    tft.setCursor(465, 135);
-    tft.print("User3 - Adj increment");
-    tft.setCursor(465, 155);
-    tft.print("DirFreq - Directions");
     tft.setFontScale((enum RA8875tsize)1);
+    tft.setTextColor(RA8875_CYAN);
+  
+    //EEPROMWrite();
+    if (digitalRead(paddleDit) == LOW) {
+      digitalWrite(RXTX, HIGH);  //Turns on relay
+      si5351.output_enable(SI5351_CLK2, 1);
+      digitalWrite(CW_ON_OFF, CW_ON);
+      digitalWrite(CAL, CAL_OFF);  // Route signal to TX output
+      radioState = CW_TRANSMIT_STRAIGHT_STATE;
+      ShowTransmitReceiveStatus();
 
-    tft.setCursor(410, 200);
-    tft.print("Power ");
-    tft.setCursor(410, 230);
-    tft.print("SWR ");
-    tft.setCursor(410, 260);
-    tft.print("Power Adj ");
-    tft.setCursor(410, 290);
-    tft.print("SWR Slope Adj ");
-    tft.setCursor(410, 320);
-    tft.print("SWR R Offset ");
-    tft.fillRect(650, 200, 100, tft.getFontHeight(), RA8875_BLACK);
-    tft.setCursor(650, 200);
-    tft.print(Pf_W, 1);
-    tft.fillRect(650, 230, 100, tft.getFontHeight(), RA8875_BLACK);
-    tft.setCursor(650, 230);
-    tft.print(swr, 2);
-    tft.fillRect(650, 260, 100, tft.getFontHeight(), RA8875_BLACK);
-    tft.setCursor(650, 260);
-    tft.print(SWR_PowerAdj[currentBand], 3);
-    tft.fillRect(650, 290, 130, tft.getFontHeight(), RA8875_BLACK);
-    tft.setCursor(650, 290);
-    tft.print(SWRSlopeAdj[currentBand], 3);
-    tft.fillRect(650, 320, 100, tft.getFontHeight(), RA8875_BLACK);
-    tft.setCursor(650, 320);
-    tft.print(SWR_R_Offset[currentBand]);
-
-    //==============
-    while (digitalRead(PTT) == LOW) {
-      IQCalFlag = 2;
-      val = ReadSelectedPushButton();
-      if (val != BOGUS_PIN_READ) {
-        val = ProcessButtonPress(val);
-        if (val != lastUsedTask) {
-          task = val;
-          lastUsedTask = val;
-        } else {
-          task = BOGUS_PIN_READ;
-        }
-      };
-
-      switch (task) {
-        case (16):  //User2
-          SWROffsetChange = !SWROffsetChange;
-          tft.setCursor(410, 350);
-          tft.fillRect(600, 350, 150, tft.getFontHeight(), RA8875_BLACK);
-          tft.print("SWR Offset Change= ");
-          tft.print(SWROffsetChange);
-          break;
-
-        case (CAL_CHANGE_INC):  //CAL_CHANGE_INC=17 User3
-
-          {  //
-            corrChange = !corrChange;
-            if (corrChange == 1) {         // Toggle increment value
-              correctionIncrement2 = 1.0;  // AFP 2-11-23
-            } else {
-              correctionIncrement2 = 0.1;  // AFP 2-11-23
-            }
-            tft.setFontScale((enum RA8875tsize)0);
-
-            tft.fillRect(550, 80, 50, tft.getFontHeight(), RA8875_BLACK);
-            tft.setTextColor(RA8875_YELLOW);
-            tft.setCursor(550, 80);
-            tft.print(correctionIncrement2, 3);
-            break;
-          }
-      }
-      digitalWrite(RXTX, HIGH);
-      SWR_PowerAdj[currentBand] = GetEncoderValueLiveSWRAdj(-20.0, 20.0, SWR_PowerAdj[currentBand], correctionIncrement2);
-      if (SWROffsetChange == 0) {
-        SWRSlopeAdj[currentBand] = GetEncoderValueLiveXSWRSlope(-50, 50, SWRSlopeAdj[currentBand], 0.1);
-
-      } else {
-        if (SWROffsetChange == 1) {
-          SWR_R_Offset[currentBand] = GetEncoderValueLiveXSWROffset(-200, 200, SWR_R_Offset[currentBand], 1);
-        }
-      }
-
-      Serial.print("SWR_R_Offset= ");
-      Serial.println(SWR_R_Offset[currentBand]);
-      ExciterIQData();
       read_SWR();
-      //=============
-      if (SWR_PowerAdj[currentBand] != lastSWR_PowerAdj || SWRSlopeAdj[currentBand] != lastSWRGainAdj || SWR_R_Offset[currentBand] != lastSWR_R_Offset) {
-        tft.setFontScale((enum RA8875tsize)1);
-        tft.setTextColor(RA8875_CYAN);
-        tft.fillRect(650, 200, 100, tft.getFontHeight(), RA8875_BLACK);
-        tft.setCursor(650, 200);
-        tft.print(Pf_W, 1);
-        tft.fillRect(650, 230, 100, tft.getFontHeight(), RA8875_BLACK);
-        tft.setCursor(650, 230);
-        tft.print(swr, 2);
-        tft.fillRect(650, 260, 100, tft.getFontHeight(), RA8875_BLACK);
-        tft.setCursor(650, 260);
-        tft.print(SWR_PowerAdj[currentBand], 3);
-        tft.fillRect(650, 290, 100, tft.getFontHeight(), RA8875_BLACK);
-        tft.setCursor(650, 290);
-        tft.print(25 + SWRSlopeAdj[currentBand], 4);
-        tft.fillRect(650, 320, 100, tft.getFontHeight(), RA8875_BLACK);
-        tft.setCursor(650, 320);
-        tft.print(SWR_R_Offset[currentBand]);
+      
+      tft.fillRect(450, 130, 150, 35, RA8875_BLACK);
+      tft.setCursor(450, 130);
+      tft.print(Pf_W,1);
+      tft.print(" W");
+    
+      tft.fillRect(450, 160, 150, 35, RA8875_BLACK);
+      tft.setCursor(450, 160);
+      tft.print(Pr_W, 1);
+      tft.print(" W");
+
+    } else {
+      if (digitalRead(paddleDit) == HIGH) {
+        digitalWrite(RXTX, LOW);  //Turns on relay
+        digitalWrite(CW_ON_OFF, CW_OFF);
+        si5351.output_enable(SI5351_CLK2, 0);
+        radioState = CW_RECEIVE;
+        ShowTransmitReceiveStatus();
+
+        // Calculate the correction factor
+        C = adcF_sRaw - adcR_sRaw - 250*log10f(9);
+
+        tft.setCursor(450, 190);
+        tft.fillRect(450, 190, 100, 35, RA8875_BLACK);
+        tft.print(C, 1);
+        tft.print(" mV");
+
       }
-      lastSWR_PowerAdj = SWR_PowerAdj[currentBand];
-      lastSWRGainAdj = SWRSlopeAdj[currentBand];
-      lastSWR_R_Offset = SWR_R_Offset[currentBand];
+    }
 
+    val = ReadSelectedPushButton();
+    if (val != BOGUS_PIN_READ)  // Any button press??
+    {
+      val = ProcessButtonPress(val);  // Use ladder value to get menu choice
+      if (val == MENU_OPTION_SELECT)  // Yep. Make a choice??
+      {
+        SWR_R_Offset[currentBand] = C;
 
-      if (task != -1) lastUsedTask = task;  //  Save the last used task.
-      task = -100;
-    }  // end while (digitalRead(PTT) == LOW)
-    digitalWrite(RXTX, LOW);
-    if (val == MENU_OPTION_SELECT) {
-      tft.fillRect(SECONDARY_MENU_X, MENUS_Y, EACH_MENU_WIDTH + 35, CHAR_HEIGHT, RA8875_BLACK);
-      EEPROMData.SWR_PowerAdj[currentBand] = SWR_PowerAdj[currentBand];
-      EEPROMData.SWRSlopeAdj[currentBand] = SWRSlopeAdj[currentBand];
-      EEPROMData.SWR_R_Offset[currentBand] = SWR_R_Offset[currentBand];
+        Serial.print("Correction = ");
+        Serial.println(C);
 
-      tft.fillRect(SECONDARY_MENU_X, MENUS_Y, EACH_MENU_WIDTH + 35, CHAR_HEIGHT, RA8875_BLACK);
-      EEPROMWrite();
-      IQCalFlag = 0;
-      SWRCalFlag = 0;
+        lastState = CW_TRANSMIT_STRAIGHT_STATE;
+       // centerFreq = centerFreq + IFFreq - NCOFreq;
+       // SetFreq();
+        twoToneFlag = 0;
+        IQCalFlag = 0;
+        SSB_PA_CalFlag = 0;
+        Q_in_L.begin();  // Start Receive Queue
+        Q_in_R.begin();
+        xrState = RECEIVE_STATE;
+        radioState = SSB_RECEIVE_STATE;
+        digitalWrite(RXTX, LOW); 
+        digitalWrite(CAL, CAL_OFF);
+        EEPROMWrite();
+        //RedrawDisplayScreen();
+        tft.writeTo(L2);
+        tft.clearMemory();
+        tft.writeTo(L1);
+        //UpdateInfoWindow();
+        break;
+      }
       break;
-    }  //
-  }    //end while(1)
-
-  //RedrawDisplayScreen();
-  lastState = SSB_TRANSMIT_STATE;
-  // restore the centerFreq
-  centerFreq = centerFreq + IFFreq - NCOFreq;
-  SetFreq();
-
-  Q_in_L_Ex.end();  // End Transmit Queue
-  Q_in_R_Ex.end();
-  Q_in_L.begin();  // Start Receive Queue
-  Q_in_R.begin();
-  xrState = RECEIVE_STATE;
-  //ShowTransmitReceiveStatus();
-  radioState = SSB_RECEIVE_STATE;
-  SWRCalFlag = 0;
+      
+    }
+  }
 }

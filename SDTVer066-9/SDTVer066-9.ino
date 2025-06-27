@@ -1300,6 +1300,8 @@ float gapStartData = 0.0;
 float gapDurationData = 0.0;
 float goertzelMagnitude;
 float swr;
+float adcF_sRaw;
+float adcR_sRaw;
 float Pf_W;
 float Pr_W;
 float Pf_dBm;

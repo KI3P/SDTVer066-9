@@ -860,6 +860,8 @@ extern float CWLevelTimerOld;
 extern float32_t combinedCoeff2;
 extern float32_t combinedCoeff2Old;
 extern float swr;
+extern float adcF_sRaw;
+extern float adcR_sRaw;
 extern float Pf_W;
 extern float Pr_W;
 extern float Pf_dBm;
