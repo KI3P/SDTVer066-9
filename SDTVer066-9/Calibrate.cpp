@@ -1593,10 +1593,10 @@ void TwoToneTest() {  //AFP 02-01-25
   centerFreq = centerFreq - IFFreq + NCOFreq;
   SetFreq();
   digitalWrite(XMIT_MODE, XMIT_SSB);
-  currentRF_OutAtten = XAttenSSB[currentBand] + getPowerLevelAdjustmentDB();
-  if (currentRF_OutAtten > 63) currentRF_OutAtten = 63;
-  if (currentRF_OutAtten < 0) currentRF_OutAtten = 0;
-  SetRF_OutAtten(currentRF_OutAtten);
+  //currentRF_OutAtten = XAttenSSB[currentBand] + getPowerLevelAdjustmentDB();
+  //if (currentRF_OutAtten > 63) currentRF_OutAtten = 63;
+  //if (currentRF_OutAtten < 0) currentRF_OutAtten = 0;
+  //SetRF_OutAtten(currentRF_OutAtten);
 
   //xmit on
   xrState = TRANSMIT_STATE;
@@ -1676,6 +1676,8 @@ void TwoToneTest() {  //AFP 02-01-25
   tft.print("User3 - Gain/Phase increment");
 
   tft.setTextColor(RA8875_YELLOW);
+  tft.setCursor(465, 90-15);
+  tft.print("Amplitude =");
   tft.setCursor(465, 90);
   tft.print("First Freq =");
   tft.setCursor(465, 105);
@@ -1691,38 +1693,8 @@ void TwoToneTest() {  //AFP 02-01-25
   while (1) {
     //=================
     val = ReadSelectedPushButton();
-
-    sineTone(numTwoToneCycles1);
-    sineTone2(numTwoToneCycles2);
-    if (numTwoToneCycles1 > 12) numTwoToneCycles1 = 4;
-    if (numTwoToneCycles2 > 36) numTwoToneCycles2 = 12;
-    firstFreq = numTwoToneCycles1 * 24000 / 256;
-    secondFreq = numTwoToneCycles2 * 24000 / 256;
-
-    tft.setFontScale((enum RA8875tsize)0);
-    tft.fillRect(600, 90, 50, tft.getFontHeight(), RA8875_BLACK);
-    tft.fillRect(600, 105, 50, tft.getFontHeight(), RA8875_BLACK);
-    tft.setTextColor(RA8875_YELLOW);
-    tft.setCursor(600, 90);
-    tft.print(firstFreq, 0);
-    tft.setCursor(600, 105);
-    tft.print(secondFreq, 0);
-
-    //==============
-    while (digitalRead(PTT) == LOW) {
-      digitalWrite(RXTX, HIGH);
-      ExciterIQData();
-
-      val = ReadSelectedPushButton();
-      if (val != BOGUS_PIN_READ) {
-        val = ProcessButtonPress(val);
-        if (val != lastUsedTask) {
-          task = val;
-          lastUsedTask = val;
-        } else {
-          task = BOGUS_PIN_READ;
-        }
-      }
+    if (val != BOGUS_PIN_READ) {
+      task = ProcessButtonPress(val);
       switch (task) {
         case (15):  //Change second Frequency
         {
@@ -1756,11 +1728,35 @@ void TwoToneTest() {  //AFP 02-01-25
           tft.print(correctionIncrement, 3);
           break;
         }
-        case (19):  //
+        default:  //
         {
           break;
         }
       }
+    }
+
+    sineTone(numTwoToneCycles1);
+    sineTone2(numTwoToneCycles2);
+    if (numTwoToneCycles1 > 12) numTwoToneCycles1 = 4;
+    if (numTwoToneCycles2 > 36) numTwoToneCycles2 = 12;
+    firstFreq = numTwoToneCycles1 * 24000 / 256;
+    secondFreq = numTwoToneCycles2 * 24000 / 256;
+
+    tft.setFontScale((enum RA8875tsize)0);
+    tft.fillRect(600, 90, 50, tft.getFontHeight(), RA8875_BLACK);
+    tft.fillRect(600, 105, 50, tft.getFontHeight(), RA8875_BLACK);
+    tft.setTextColor(RA8875_YELLOW);
+    tft.setCursor(600, 90);
+    tft.print(firstFreq, 0);
+    tft.setCursor(600, 105);
+    tft.print(secondFreq, 0);
+
+    //==============
+    while (digitalRead(PTT) == LOW) {
+
+
+      digitalWrite(RXTX, HIGH);
+      ExciterIQData();      
     }  // end while (digitalRead(PTT) == LOW)
 
     if (task != -1) lastUsedTask = task;  //  Save the last used task.
@@ -1798,6 +1794,8 @@ void TwoToneTest() {  //AFP 02-01-25
   tft.fillRect(SECONDARY_MENU_X, MENUS_Y, EACH_MENU_WIDTH + 35, CHAR_HEIGHT, RA8875_BLACK);
   EEPROMData.IQAmpCorrectionFactor[currentBand] = IQAmpCorrectionFactor[currentBand];
   EEPROMData.IQPhaseCorrectionFactor[currentBand] = IQPhaseCorrectionFactor[currentBand];
+  zoomIndex = userZoomIndex;
+  spectrum_zoom = userZoomIndex;
   ButtonZoom();     // Restore the user's zoom setting.  Note that this function also modifies spectrum_zoom.
   EEPROMWrite();    // Save calibration numbers and configuration.   August 12, 2023
   tft.writeTo(L2);  // Clear layer 2.   July 31, 2023
@@ -1807,7 +1805,7 @@ void TwoToneTest() {  //AFP 02-01-25
   RedrawDisplayScreen();
   UpdateInfoWindow();
   si5351.output_enable(SI5351_CLK2, 0);
-  CalibratePost();
+  //CalibratePost();
   return;
 }
 

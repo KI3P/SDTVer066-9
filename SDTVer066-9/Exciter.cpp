@@ -21,6 +21,8 @@
     6.  Interpolate 8x (upsample and filter) the data stream to 192KHz sample rate
     7.  Output the data stream thruogh the DACs at 192KHz
 *****/
+static float twoToneScale = 0.05;
+static float twoToneScaleOld;
 void ExciterIQData() {
   uint32_t N_BLOCKS_EX = N_B_EX;
   int SSB_CalModeTask = 0;
@@ -81,9 +83,18 @@ void ExciterIQData() {
 
       case (1):  // Two-tone signal generation - uses Hilbert transfor to generate IQ signals
         arm_add_f32(sinBuffer4, sinBuffer5, float_buffer_L_EX, 256);
-        arm_add_f32(sinBuffer4, sinBuffer5, float_buffer_R_EX, 256);
-        arm_scale_f32(float_buffer_L_EX, .1, float_buffer_L_EX, 256);
-        arm_scale_f32(float_buffer_R_EX, .1, float_buffer_R_EX, 256);
+        twoToneScaleOld = twoToneScale;
+        twoToneScale = GetEncoderValueLiveXSWRSlope(0, 0.5, twoToneScale, 0.005);
+        if (twoToneScale != twoToneScaleOld){
+          // Update the display
+          tft.setFontScale((enum RA8875tsize)0);
+          tft.fillRect(600, 90-15, 50, tft.getFontHeight(), RA8875_BLACK);
+          tft.setTextColor(RA8875_YELLOW);
+          tft.setCursor(600, 90-15);
+          tft.print(twoToneScale, 3);
+        }
+
+        arm_scale_f32(float_buffer_L_EX, twoToneScale, float_buffer_L_EX, 256);
         break;
 
       case (2):  // //Sine wave generator for transmit IQ Calibrate and Transmit SSB power calibrate
