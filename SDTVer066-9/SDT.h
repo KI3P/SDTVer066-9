@@ -1379,11 +1379,10 @@ extern struct config_t {
   float32_t TransmitPowerLevelCW = 0.0;  // Power level factors by mode
   float32_t TransmitPowerLevelSSB = 0.0;
 
-float SWR_PowerAdj[NUMBER_OF_BANDS];
-float SWRSlopeAdj[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-int SWR_R_Offset[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-int SWR_F_Offset[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
+  float SWR_F_SlopeAdj[NUMBER_OF_BANDS] = {0};
+  float SWR_R_SlopeAdj[NUMBER_OF_BANDS] = {0};
+  float SWR_R_Offset[NUMBER_OF_BANDS] = {0};
+  float SWR_F_Offset[NUMBER_OF_BANDS] = {0};
 } EEPROMData;  //  Total:       438 bytes
 
 
@@ -2200,10 +2199,10 @@ extern float32_t save_volts;
 extern float32_t sidetoneVolume;
 extern const float32_t volumeLog[101];
 extern float32_t slope_constant;
-extern float SWR_PowerAdj[];
-extern float SWRSlopeAdj[];
-extern int SWR_R_Offset[];
-extern int SWR_F_Offset[];
+extern float SWR_F_SlopeAdj[];
+extern float SWR_R_SlopeAdj[];
+extern float SWR_R_Offset[];
+extern float SWR_F_Offset[];
 extern float32_t spectrum_display_scale;  // 30.0
 extern float32_t stereo_factor;
 extern float32_t transmitPowerLevel;

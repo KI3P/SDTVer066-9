@@ -167,8 +167,8 @@ FLASHMEM void EEPROMRead() {
     XAttenSSB[i] = EEPROMData.XAttenSSB[i];
     RAtten[i] = EEPROMData.RAtten[i];
     antennaSelection[i] = EEPROMData.antennaSelection[i];
-    SWR_PowerAdj[i] = EEPROMData.SWR_PowerAdj[i];
-    SWRSlopeAdj[i] = EEPROMData.SWRSlopeAdj[i];
+    SWR_F_SlopeAdj[i] = EEPROMData.SWR_F_SlopeAdj[i];
+    SWR_R_SlopeAdj[i] = EEPROMData.SWR_R_SlopeAdj[i];
     SWR_R_Offset[i] = EEPROMData.SWR_R_Offset[i];
     SWR_F_Offset[i] = EEPROMData.SWR_F_Offset[i];
   }
@@ -297,8 +297,8 @@ FLASHMEM void EEPROMWrite() {
     EEPROMData.XAttenSSB[i] = XAttenSSB[i];
     EEPROMData.RAtten[i] = RAtten[i];
     EEPROMData.antennaSelection[i] = antennaSelection[i];
-    EEPROMData.SWR_PowerAdj[i] = SWR_PowerAdj[i];
-    EEPROMData.SWRSlopeAdj[i] = SWRSlopeAdj[i];
+    EEPROMData.SWR_F_SlopeAdj[i] = SWR_F_SlopeAdj[i];
+    EEPROMData.SWR_R_SlopeAdj[i] = SWR_R_SlopeAdj[i];
     EEPROMData.SWR_R_Offset[i] = SWR_R_Offset[i];
     EEPROMData.SWR_F_Offset[i] = SWR_F_Offset[i];
     
@@ -537,14 +537,24 @@ FLASHMEM void EEPROMShow() {
   }
   Serial.println(F(" "));
   for (int i = 0; i < NUMBER_OF_BANDS; i++) {
+    Serial.print(F("           SWR_F_SlopeAdj["));
+    Serial.print(i);
+    Serial.print(F("] = "));
+    Serial.println(EEPROMData.SWR_F_SlopeAdj[i]);
+  }
+  Serial.println(F(" "));
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) {
+    Serial.print(F("           SWR_R_SlopeAdj["));
+    Serial.print(i);
+    Serial.print(F("] = "));
+    Serial.println(EEPROMData.SWR_R_SlopeAdj[i]);
+  }
+  Serial.println(F(" "));
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) {
     Serial.print(F("           antennaSelection["));
     Serial.print(i);
     Serial.print(F("] = "));
     Serial.println(EEPROMData.antennaSelection[i], 5);
-    Serial.println(EEPROMData.SWR_PowerAdj[i], 5);
-    Serial.println(EEPROMData.SWRSlopeAdj[i], 5);
-    Serial.println(EEPROMData.SWR_R_Offset[i], 5);
-    
   }
   Serial.println(F(" "));
   Serial.println(F("----- I/Q Calibration Parameters -----"));
@@ -995,8 +1005,8 @@ FLASHMEM void EEPROMSaveDefaults2() {
     EEPROMData.XAttenSSB[i] = 8.5;
     EEPROMData.RAtten[i] = 0;
     EEPROMData.antennaSelection[i] = 0;
-    EEPROMData.SWR_PowerAdj[i] = 0;
-    EEPROMData.SWRSlopeAdj[i] = 0;
+    EEPROMData.SWR_F_SlopeAdj[i] = 0;
+    EEPROMData.SWR_R_SlopeAdj[i] = 0;
     EEPROMData.SWR_R_Offset[i] = 0;
     EEPROMData.SWR_F_Offset[i] = 0;
   }

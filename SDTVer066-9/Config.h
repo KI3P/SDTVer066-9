@@ -48,6 +48,10 @@
 // Pick one of the following encoder configurations
 #define NORM_ENCODER  // Leave as is UNLESS...
 
+// SWR measurement: 
+#define COUPLER_ATTENUATION_DB 20 // attenuation of the binocular toroid coupler
+#define PAD_ATTENUATION_DB 26 // attenuation of the pad
+#define VREF_MV 4096     // the reference voltage on your board
 
 //====================== Software selections ===================
 

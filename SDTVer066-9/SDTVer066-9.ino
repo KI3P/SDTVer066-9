@@ -701,10 +701,10 @@ int XAttenCW[NUMBER_OF_BANDS] = { (int)(float32_t *)c };
 int XAttenSSB[NUMBER_OF_BANDS] = { 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 };
 int RAtten[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 int antennaSelection[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-float SWR_PowerAdj[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-float SWRSlopeAdj[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-int SWR_R_Offset[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-int SWR_F_Offset[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+float SWR_F_SlopeAdj[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+float SWR_R_SlopeAdj[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+float SWR_R_Offset[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+float SWR_F_Offset[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 const char *topMenus[] = {
   "RF Set", "CW Options", "VFO Select",
   "EEPROM", "AGC", "Spectrum Options",

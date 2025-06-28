@@ -1810,7 +1810,7 @@ void TwoToneTest() {  //AFP 02-01-25
 }
 
 /*****
-  Purpose: Calibrate CW PA Power output
+  Purpose: Calibrate CW PA Power output.
    Parameter List:
       void
    Return value:
@@ -1869,8 +1869,10 @@ void CW_PA_Calibrate() {
   //================
   powerOutCW[currentBand] = transmitPowerLevelCW;
   SWR_F_Offset[currentBand] = 0;
+  SWR_F_SlopeAdj[currentBand] = 0;
   #define NPF 10
   float pfd[NPF] = {0};
+  float ADCfd[NPF] = {0};
   uint8_t kp=0;
   while (1) {
     tft.setFontScale((enum RA8875tsize)1);
@@ -1904,6 +1906,7 @@ void CW_PA_Calibrate() {
       digitalWrite(CAL, CAL_OFF);  // Route signal to TX output
       radioState = CW_TRANSMIT_STRAIGHT_STATE;
       ShowTransmitReceiveStatus();
+      ADCfd[kp] = adcF_sRaw;
       pfd[kp++] = Pf_dBm;
       if(kp == NPF) kp = 0;
     } else {
@@ -1923,26 +1926,70 @@ void CW_PA_Calibrate() {
       if (val == MENU_OPTION_SELECT)  // Yep. Make a choice??
       {
         CWPowerCalibrationFactor[currentBand] = (float)XAttenCW[currentBand]/2.0;
-        // Intercept correction for the forward power channel
-        float pfdt = 0;
+
+        // Save the read power and the read adc
+        float P0 = 0;
+        float ADC0 = 0;
         for (size_t k =0; k<NPF; k++){
-          pfdt += pfd[k];
+          P0 += pfd[k];
+          ADC0 += ADCfd[k];
         }
-        pfdt = pfdt / NPF;
-        //Serial.print("Pf_dBm = ");
-        //Serial.println(pfdt,2);
+        P0 = P0 / NPF;
+        ADC0 = ADC0 / NPF;
 
-        float Pactual = 10*log10f(1000*powerOutCW[currentBand]);
-        //Serial.print("Pact_dBm = ");
-        //Serial.println(Pactual,2);
+        Serial.println("Increasing attenuation by 6");
+        // Increase the attenuation by 6dB
+        SetRF_OutAtten(XAttenCW[currentBand]+6*2);
+        
+        Serial.println("Measuring power");
+        // Turn transmit on and then measure power and ADC
+        digitalWrite(RXTX, HIGH);  //Turns on relay
+        si5351.output_enable(SI5351_CLK2, 1);
+        digitalWrite(CW_ON_OFF, CW_ON);
+        digitalWrite(CAL, CAL_OFF);  // Route signal to TX output
+        radioState = CW_TRANSMIT_STRAIGHT_STATE;
+        ShowTransmitReceiveStatus();
+        kp = 0;
+        for (int p=0; p<150; p++){
+          read_SWR();
+          ADCfd[kp] = adcF_sRaw;
+          pfd[kp++] = Pf_dBm;
+          if(kp == NPF) kp = 0;
+        }
+        Serial.println("Turning off transmit");
+        digitalWrite(RXTX, LOW);  //Turns off relay
+        digitalWrite(CW_ON_OFF, CW_OFF);
+        si5351.output_enable(SI5351_CLK2, 0);
+        radioState = CW_RECEIVE;
+        ShowTransmitReceiveStatus();
 
-        float delta = Pactual - pfdt;
-        int C = (int)(25*delta);
-        //Serial.print("Delta_dBm = ");
-        //Serial.println(delta,2);
-        Serial.print("Correction = ");
-        Serial.println(C);
-        SWR_F_Offset[currentBand] = C;
+        // Save the read power and the read adc
+        float P1 = 0;
+        float ADC1 = 0;
+        for (size_t k =0; k<NPF; k++){
+          P1 += pfd[k];
+          ADC1 += ADCfd[k];
+        }
+        P1 = P1 / NPF;
+        ADC1 = ADC1 / NPF;
+        Serial.print("P0_dBm = "); Serial.println(P0,2);
+        Serial.print("ADC0_mV = "); Serial.println(ADC0,2);
+
+        Serial.print("P1_dBm = "); Serial.println(P1,2);
+        Serial.print("ADC1_mV = "); Serial.println(ADC1,2);
+
+        // Now calculate the corrections
+        SWR_F_SlopeAdj[currentBand] = (ADC0 - ADC1)/(6) - 25.0;
+        Serial.print("F slope adj = "); Serial.println(SWR_F_SlopeAdj[currentBand],2);
+
+        float P0actual_dBm = 10*log10f(1000*powerOutCW[currentBand]);
+        SWR_F_Offset[currentBand] = P0actual_dBm - ADC0/(25+SWR_F_SlopeAdj[currentBand]) 
+                                    + 84 - PAD_ATTENUATION_DB - COUPLER_ATTENUATION_DB;
+        Serial.print("F offset = "); Serial.println(SWR_F_Offset[currentBand],2);
+        float corrected = ADC0/(25+SWR_F_SlopeAdj[currentBand])-84 + SWR_F_Offset[currentBand] + PAD_ATTENUATION_DB + COUPLER_ATTENUATION_DB;
+        Serial.print("P corrected [dBm] = "); Serial.println(corrected,2);
+
+        SetRF_OutAtten(XAttenCW[currentBand]);
 
         lastState = CW_TRANSMIT_STRAIGHT_STATE;
        // centerFreq = centerFreq + IFFreq - NCOFreq;
