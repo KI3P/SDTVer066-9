@@ -25,10 +25,8 @@ void read_SWR() {
   adcF_sRawOld = adcF_sRaw;
   adcR_sRawOld = adcR_sRaw;
 
-  Serial.print("adcF_sRaw = ");
-  Serial.println(adcF_sRaw, 1); 
-  Serial.print("adcR_sRaw = ");
-  Serial.println(adcR_sRaw, 1);
+  //Serial.print("adcF_sRaw = "); Serial.println(adcF_sRaw, 1); 
+  //Serial.print("adcR_sRaw = "); Serial.println(adcR_sRaw, 1);
 
   //adcF_sRaw = adcF_sRaw + SWR_F_Offset[currentBand];
   //adcR_sRaw = adcR_sRaw + SWR_R_Offset[currentBand];
@@ -47,8 +45,8 @@ void read_SWR() {
   Pf_dBm = adcF_sRaw/(25 + SWR_F_SlopeAdj[currentBand]) - 84 + SWR_F_Offset[currentBand] + PAD_ATTENUATION_DB + COUPLER_ATTENUATION_DB;
   Pr_dBm = adcR_sRaw/(25 + SWR_R_SlopeAdj[currentBand]) - 84 + SWR_R_Offset[currentBand] + PAD_ATTENUATION_DB + COUPLER_ATTENUATION_DB;
 
-  Serial.print("Pf_dBm = "); Serial.println(Pf_dBm,2);
-  Serial.print("Pr_dBm = "); Serial.println(Pr_dBm,2);
+  //Serial.print("Pf_dBm = "); Serial.println(Pf_dBm,2);
+  //Serial.print("Pr_dBm = "); Serial.println(Pr_dBm,2);
 
   // Convert to input voltage squared as read by ADC converted to before attenuation
   Pf_W = (float)pow(10,Pf_dBm/10)/1000;

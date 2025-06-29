@@ -1847,23 +1847,25 @@ void CW_PA_Calibrate() {
   tft.setTextColor(RA8875_CYAN);
   tft.setCursor(10, 270);
   tft.print("Directions ");
-  tft.setCursor(25, 290);
+  int ycursor = 290;
+  int deltay = 15;
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Connect T41 Antenna to Power Meter & DL");
-  tft.setCursor(25, 305);
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Attach Key");
-  tft.setCursor(25, 320);
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Adjust Power Level for Set Point - Menu: RF Set/Power level");
-  tft.setCursor(25, 335);
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Select: Calibrate/CW PA Cal from menu");
-  tft.setCursor(25, 350);
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Press Key to start CW output");
-  tft.setCursor(25, 365);
-  tft.print("* Adjust attenuation until external Power Meter matches Set Point");
-  tft.setCursor(25, 380);
-  tft.print("    using Filter Encoder");
-  tft.setCursor(25, 395);
+  tft.setCursor(25, ycursor+=deltay);
+  tft.print("* Adjust attenuation using Filter encoder until external Power Meter matches Set Point");
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Release Key");
-  tft.setCursor(25, 410);
+  tft.setCursor(25, ycursor+=deltay);
+  tft.print("* Press User3 to complete measurements");
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Press Select to Save/Exit");
 
   //================
@@ -1874,74 +1876,80 @@ void CW_PA_Calibrate() {
   float pfd[NPF] = {0};
   float ADCfd[NPF] = {0};
   uint8_t kp=0;
+  tft.setFontScale((enum RA8875tsize)1);
+  tft.setTextColor(RA8875_CYAN);
+  tft.setCursor(450, 130);
+  tft.print(powerOutCW[currentBand]);
+  tft.print(" W");
+
+  tft.setCursor(450, 160);
+  tft.setFontScale((enum RA8875tsize)1);
+  tft.setTextColor(RA8875_CYAN);
+  tft.print((float)XAttenCW[currentBand]/2.0, 1);
+  tft.print(" dB");
+
+  uint8_t old_state = 0;
+  uint8_t state = 0;
+  SetRF_OutAtten(XAttenCW[currentBand]);
+
   while (1) {
-    tft.setFontScale((enum RA8875tsize)1);
-    tft.setTextColor(RA8875_CYAN);
-    //tft.setCursor(450, 130);
-    //powerOutCW[currentBand] = -0.017 * pow(transmitPowerLevelCW, 3) + 0.4501 * pow(transmitPowerLevelCW, 2) - 5.095 * (transmitPowerLevelCW) + 51.086;
-    tft.setCursor(450, 130);
-    tft.print(powerOutCW[currentBand]);
-    tft.print(" W");
+    
     if (filterEncoderMove != 0) {
       XAttenCW[currentBand] += filterEncoderMove;
       filterEncoderMove = 0;
       if (XAttenCW[currentBand] > 63) XAttenCW[currentBand] = 63;
       if (XAttenCW[currentBand] < 0) XAttenCW[currentBand] = 0;
       SetRF_OutAtten(XAttenCW[currentBand]);
+
+      tft.fillRect(450, 160, 150, 35, RA8875_BLACK);
+      tft.setCursor(450, 160);
+      tft.setFontScale((enum RA8875tsize)1);
+      tft.setTextColor(RA8875_CYAN);
+      tft.print((float)XAttenCW[currentBand]/2.0, 1);
+      tft.print(" dB");
     }
-    read_SWR();
-    tft.fillRect(450, 160, 150, 35, RA8875_BLACK);
-    tft.setCursor(450, 160);
-    tft.print((float)XAttenCW[currentBand]/2.0, 1);
-    tft.print(" dB");
-    tft.setCursor(450, 190);
-    tft.fillRect(450, 190, 100, 35, RA8875_BLACK);
-    tft.print(Pf_W, 1);
-    tft.print(" W");
-    //EEPROMWrite();
     if (digitalRead(paddleDit) == LOW) {
-      digitalWrite(RXTX, HIGH);  //Turns on relay
-      si5351.output_enable(SI5351_CLK2, 1);
-      digitalWrite(CW_ON_OFF, CW_ON);
-      digitalWrite(CAL, CAL_OFF);  // Route signal to TX output
-      radioState = CW_TRANSMIT_STRAIGHT_STATE;
-      ShowTransmitReceiveStatus();
-      ADCfd[kp] = adcF_sRaw;
-      pfd[kp++] = Pf_dBm;
-      if(kp == NPF) kp = 0;
+      state = 1;
     } else {
-      if (digitalRead(paddleDit) == HIGH) {
-        digitalWrite(RXTX, LOW);  //Turns on relay
+      state = 0;
+    }
+
+    if (state != old_state){
+      if (state == 1){
+        digitalWrite(RXTX, HIGH);  //Turns on relay
+        si5351.output_enable(SI5351_CLK2, 1);
+        digitalWrite(CW_ON_OFF, CW_ON);
+        digitalWrite(CAL, CAL_OFF);  // Route signal to TX output
+        radioState = CW_TRANSMIT_STRAIGHT_STATE;
+        ShowTransmitReceiveStatus();
+      } else {
+        digitalWrite(RXTX, LOW);  //Turns off relay
         digitalWrite(CW_ON_OFF, CW_OFF);
         si5351.output_enable(SI5351_CLK2, 0);
         radioState = CW_RECEIVE;
         ShowTransmitReceiveStatus();
       }
+      old_state = state;
+    } 
+    if (state == 1){
+      read_SWR();
+      ADCfd[kp] = adcF_sRaw;
+      pfd[kp++] = Pf_dBm;
+      if(kp == NPF) kp = 0;
+      tft.setCursor(450, 190);
+      tft.fillRect(450, 190, 100, 35, RA8875_BLACK);
+      tft.setFontScale((enum RA8875tsize)1);
+      tft.setTextColor(RA8875_CYAN);
+      tft.print(Pf_W, 1);
+      tft.print(" W");
     }
-
     val = ReadSelectedPushButton();
     if (val != BOGUS_PIN_READ)  // Any button press??
     {
-      val = ProcessButtonPress(val);  // Use ladder value to get menu choice
-      if (val == MENU_OPTION_SELECT)  // Yep. Make a choice??
-      {
-        CWPowerCalibrationFactor[currentBand] = (float)XAttenCW[currentBand]/2.0;
-
-        // Save the read power and the read adc
-        float P0 = 0;
-        float ADC0 = 0;
-        for (size_t k =0; k<NPF; k++){
-          P0 += pfd[k];
-          ADC0 += ADCfd[k];
-        }
-        P0 = P0 / NPF;
-        ADC0 = ADC0 / NPF;
-
-        Serial.println("Increasing attenuation by 6");
-        // Increase the attenuation by 6dB
-        SetRF_OutAtten(XAttenCW[currentBand]+6*2);
-        
-        Serial.println("Measuring power");
+      if (val == CAL_PA_RUN)  // User 3
+      {        
+        // Turn on and measure the power at a range of attenuations
+        Serial.println("Turning on transmit");
         // Turn transmit on and then measure power and ADC
         digitalWrite(RXTX, HIGH);  //Turns on relay
         si5351.output_enable(SI5351_CLK2, 1);
@@ -1949,13 +1957,29 @@ void CW_PA_Calibrate() {
         digitalWrite(CAL, CAL_OFF);  // Route signal to TX output
         radioState = CW_TRANSMIT_STRAIGHT_STATE;
         ShowTransmitReceiveStatus();
-        kp = 0;
-        for (int p=0; p<150; p++){
-          read_SWR();
-          ADCfd[kp] = adcF_sRaw;
-          pfd[kp++] = Pf_dBm;
-          if(kp == NPF) kp = 0;
+
+        const uint8_t max_atten = 10;
+        float atts[2*max_atten+1];
+        float adcs[2*max_atten+1];
+        Serial.println("Att,ADC");
+        for (int k=0; k<(2*max_atten+1); k++)
+        {
+          SetRF_OutAtten(XAttenCW[currentBand]+k);
+          kp = 0;
+          for (int p=0; p<200; p++){
+            read_SWR();
+            ADCfd[kp++] = adcF_sRaw;
+            if(kp == NPF) kp = 0;
+          }
+          float ADC0 = 0;
+          for (size_t q =0; q<NPF; q++){
+            ADC0 += ADCfd[q];
+          }
+          atts[k] = (float)k / 2;
+          adcs[k] = ADC0 / NPF;
+          Serial.print(atts[k],1); Serial.print(","); Serial.println(adcs[k],1);
         }
+
         Serial.println("Turning off transmit");
         digitalWrite(RXTX, LOW);  //Turns off relay
         digitalWrite(CW_ON_OFF, CW_OFF);
@@ -1963,37 +1987,53 @@ void CW_PA_Calibrate() {
         radioState = CW_RECEIVE;
         ShowTransmitReceiveStatus();
 
-        // Save the read power and the read adc
-        float P1 = 0;
-        float ADC1 = 0;
-        for (size_t k =0; k<NPF; k++){
-          P1 += pfd[k];
-          ADC1 += ADCfd[k];
+        // Do each of the slope and intercept calcs
+        SWR_F_SlopeAdj[currentBand] = 0;
+        for (int k=1; k<(2*max_atten+1); k++){
+          float numerator = (adcs[0] - adcs[k]);
+          float denominator = (atts[k]-atts[0]);
+          float slopek = numerator/denominator - 25.0;
+          //Serial.print("numerator_k = "); Serial.println(numerator,2);
+          //Serial.print("denominator_k = "); Serial.println(denominator,2);
+          //Serial.print("slope_k = "); Serial.println(slopek,2);
+          SWR_F_SlopeAdj[currentBand] += slopek;
         }
-        P1 = P1 / NPF;
-        ADC1 = ADC1 / NPF;
-        Serial.print("P0_dBm = "); Serial.println(P0,2);
-        Serial.print("ADC0_mV = "); Serial.println(ADC0,2);
-
-        Serial.print("P1_dBm = "); Serial.println(P1,2);
-        Serial.print("ADC1_mV = "); Serial.println(ADC1,2);
-
-        // Now calculate the corrections
-        SWR_F_SlopeAdj[currentBand] = (ADC0 - ADC1)/(6) - 25.0;
+        SWR_F_SlopeAdj[currentBand] = SWR_F_SlopeAdj[currentBand]/(2*(float)max_atten);
         Serial.print("F slope adj = "); Serial.println(SWR_F_SlopeAdj[currentBand],2);
-
-        float P0actual_dBm = 10*log10f(1000*powerOutCW[currentBand]);
-        SWR_F_Offset[currentBand] = P0actual_dBm - ADC0/(25+SWR_F_SlopeAdj[currentBand]) 
+        Serial.println("Att,Pact,Offset");
+        SWR_F_Offset[currentBand] = 0;
+        for (int k=0; k<(2*max_atten+1); k++){
+          float P0actual_dBm = 10*log10f(1000*powerOutCW[currentBand])-atts[k];
+          Serial.print(atts[k],1); Serial.print(",");
+          Serial.print(P0actual_dBm,2); Serial.print(",");
+          float offsetk = P0actual_dBm - adcs[k]/(25+SWR_F_SlopeAdj[currentBand]) 
                                     + 84 - PAD_ATTENUATION_DB - COUPLER_ATTENUATION_DB;
-        Serial.print("F offset = "); Serial.println(SWR_F_Offset[currentBand],2);
-        float corrected = ADC0/(25+SWR_F_SlopeAdj[currentBand])-84 + SWR_F_Offset[currentBand] + PAD_ATTENUATION_DB + COUPLER_ATTENUATION_DB;
-        Serial.print("P corrected [dBm] = "); Serial.println(corrected,2);
+          Serial.println(offsetk,2);
+          SWR_F_Offset[currentBand] += offsetk;
+        }
+        SWR_F_Offset[currentBand] = SWR_F_Offset[currentBand]/(2*(float)max_atten+1.0);
+        Serial.print("F offset    = "); Serial.println(SWR_F_Offset[currentBand],2);
 
+        // Now calculate the corrected nominal power
+        float corrected = adcs[0]/(25+SWR_F_SlopeAdj[currentBand])-84 + SWR_F_Offset[currentBand] + PAD_ATTENUATION_DB + COUPLER_ATTENUATION_DB;
+        Serial.print("P corrected [dBm] = "); Serial.println(corrected,2);
+        float corrected_W = pow(10,corrected/10)/1000;
+        Serial.print("P corrected [W] = "); Serial.println(corrected_W,1);
+
+        tft.setCursor(450, 190);
+        tft.fillRect(450, 190, 100, 35, RA8875_BLACK);
+        tft.setFontScale((enum RA8875tsize)1);
+        tft.setTextColor(RA8875_CYAN);
+        tft.print(corrected_W, 2);
+        tft.print(" W");
+
+      }
+      if (val == MENU_OPTION_SELECT)  // Save and exit
+      {
+        CWPowerCalibrationFactor[currentBand] = (float)XAttenCW[currentBand]/2.0;
         SetRF_OutAtten(XAttenCW[currentBand]);
 
         lastState = CW_TRANSMIT_STRAIGHT_STATE;
-       // centerFreq = centerFreq + IFFreq - NCOFreq;
-       // SetFreq();
         twoToneFlag = 0;
         IQCalFlag = 0;
         SSB_PA_CalFlag = 0;
@@ -2004,15 +2044,11 @@ void CW_PA_Calibrate() {
         digitalWrite(RXTX, LOW); 
         digitalWrite(CAL, CAL_OFF);
         EEPROMWrite();
-        //RedrawDisplayScreen();
         tft.writeTo(L2);
         tft.clearMemory();
         tft.writeTo(L1);
-        //UpdateInfoWindow();
         break;
-      }
-      break;
-      
+      }      
     }
   }
 }
@@ -2059,32 +2095,37 @@ void SSB_PA_Calibrate() {
   tft.print("SSB Power Set Point");
   tft.setCursor(50, 125);
   tft.print("Attenuator Setting");
+  tft.setCursor(50, 155);
+  tft.print("Measured Power");
+  
   //===========
   tft.setFontScale((enum RA8875tsize)0);
   tft.setTextColor(RA8875_CYAN);
   tft.setCursor(10, 205);
   tft.print("Directions ");
-  tft.setCursor(25, 220);
-  tft.print("* First - Calibrate Xmit IQ");
-  tft.setCursor(25, 235);
+  int ycursor = 220;
+  int deltay = 15;
+  tft.setCursor(25, ycursor+=deltay);
+  tft.print("* First - Calibrate Xmit IQ and perform CW PA Cal");
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Connect T41 Antenna to Power Meter & DL");
-  tft.setCursor(25, 250);
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Set Mode to SSB & Attach switch to PPT");
-  tft.setCursor(25, 265);
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Adjust SSB Power Level to 5W - Menu: RF Set/Power level");
-  tft.setCursor(25, 280);
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Select: Calibrate/SSB PA Cal from menu");
-  tft.setCursor(25, 295);
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Uses Internal Source, press Key/switch");
-  tft.setCursor(25, 310);
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Adjust attenuation until 5W measured on External Power Meter");
-  tft.setCursor(25, 325);
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Press Select to Save/Exit");
-  tft.setCursor(25, 340);
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Attach Mic to input");
-  tft.setCursor(25, 355);
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Press PTT & speak into Mic");
-  tft.setCursor(25, 370);
+  tft.setCursor(25, ycursor+=deltay);
   tft.print("* Adjust Mic Gain to achieve 5W output");
 
   modeSelectInR.gain(0, 0);
@@ -2096,36 +2137,75 @@ void SSB_PA_Calibrate() {
   modeSelectOutExL.gain(0, 1);  //AFP 10-21-22
   modeSelectOutExR.gain(0, 1);
 
-  while (1) {
-    tft.setFontScale((enum RA8875tsize)1);
-    tft.setTextColor(RA8875_CYAN);
-    tft.setCursor(450, 95);
-    tft.print(powerOutSSB[currentBand], 1);
-    tft.print(" W");
-    while (digitalRead(PTT) == LOW) {
+  uint8_t old_state = 0;
+  uint8_t state = 0;
+  
+  tft.setFontScale((enum RA8875tsize)1);
+  tft.setTextColor(RA8875_CYAN);
+  tft.setCursor(450, 95);
+  tft.print(powerOutSSB[currentBand], 1);
+  tft.print(" W");
 
-      if (filterEncoderMove != 0) {
-        XAttenSSB[currentBand] += filterEncoderMove;
-        filterEncoderMove = 0.;
-        if (XAttenSSB[currentBand] > 63) XAttenSSB[currentBand] = 63;
-        if (XAttenSSB[currentBand] < 0) XAttenSSB[currentBand] = 0;
-        SetRF_OutAtten(XAttenSSB[currentBand]);
-      }
-      read_SWR();
-      tft.fillRect(450, 125, 100, 35, RA8875_BLACK);
+  tft.fillRect(450, 125, 110, 35, RA8875_BLACK);
+  tft.setCursor(450, 125);
+  tft.setFontScale((enum RA8875tsize)1);
+  tft.setTextColor(RA8875_CYAN);
+  tft.print((float)XAttenSSB[currentBand]/2.0, 1);
+  tft.print(" dB");
+
+  while (1) {
+
+    if (filterEncoderMove != 0) {
+      XAttenSSB[currentBand] += filterEncoderMove;
+      filterEncoderMove = 0.;
+      if (XAttenSSB[currentBand] > 63) XAttenSSB[currentBand] = 63;
+      if (XAttenSSB[currentBand] < 0) XAttenSSB[currentBand] = 0;
+      SetRF_OutAtten(XAttenSSB[currentBand]);
+
+      tft.fillRect(450, 125, 110, 35, RA8875_BLACK);
       tft.setCursor(450, 125);
+      tft.setFontScale((enum RA8875tsize)1);
+      tft.setTextColor(RA8875_CYAN);
       tft.print((float)XAttenSSB[currentBand]/2.0, 1);
       tft.print(" dB");
-      digitalWrite(RXTX, HIGH);  //xmit on
-      xrState = TRANSMIT_STATE;
-      ExciterIQData();
     }
-    digitalWrite(RXTX, LOW);
+
+    if (digitalRead(PTT) == LOW) {
+      state = 1;
+    } else {
+      state = 0;
+    }
+
+    if (state != old_state){
+      if (state == 1){
+        digitalWrite(RXTX, HIGH);  //xmit on
+        radioState = SSB_TRANSMIT_STATE;
+        xrState = TRANSMIT_STATE;
+        ExciterIQData();
+        ShowTransmitReceiveStatus();
+      } else {
+        digitalWrite(RXTX, LOW);
+        radioState = SSB_RECEIVE;
+        xrState = RECEIVE_STATE;
+        ShowTransmitReceiveStatus();
+      }
+      old_state = state;
+    } 
+
+    if (state == 1){
+      ExciterIQData();
+      read_SWR();
+      tft.fillRect(450, 155, 100, 35, RA8875_BLACK);
+      tft.setFontScale((enum RA8875tsize)1);
+      tft.setTextColor(RA8875_CYAN);  
+      tft.setCursor(450, 155);
+      tft.print(Pf_W, 1);
+      tft.print(" W");
+    }
 
     val = ReadSelectedPushButton();
     if (val != BOGUS_PIN_READ)  // Any button press??
     {
-      val = ProcessButtonPress(val);  // Use ladder value to get menu choice
       if (val == MENU_OPTION_SELECT)  // Yep. Make a choice??
       {
         SSBPowerCalibrationFactor[currentBand] = (float)XAttenSSB[currentBand]/2.0;
@@ -2148,26 +2228,6 @@ void SSB_PA_Calibrate() {
         //UpdateInfoWindow();
         val = -100;
         break;
-      }
-      if (val == 17) {  // 17 User3
-        tft.clearScreen(RA8875_BLACK);
-        tft.setFontScale((enum RA8875tsize)1);
-        if (SSB_PA_CalFlag == 0) {
-          twoToneFlag = 0;
-          IQCalFlag = 0;
-          tft.fillRect(450, 215, 120, 35, RA8875_BLACK);
-          tft.setCursor(450, 215);
-          tft.print("Internal");
-          SSB_PA_CalFlag = 1;
-        } else {
-          if (SSB_PA_CalFlag == 1) {
-            tft.fillRect(450, 215, 120, 35, RA8875_BLACK);
-            tft.setCursor(450, 215);
-            tft.print("External");
-            SSB_PA_CalFlag = 0;
-          }
-        }
-        val = -100;
       }
     }
   }
@@ -2217,76 +2277,142 @@ void DoSWRCal() {
   tft.setCursor(25, yi+=deltay);
   tft.print("* Perform CW PA Cal before doing SWR cal");
   tft.setCursor(25, yi+=deltay);
-  tft.print("* Connect T41 Antenna to 100 Ohm dummy load");
+  tft.print("* Connect T41 Antenna to 100 Ohm non-inductive dummy load");
+  //tft.setCursor(25, yi+=deltay);
+  //tft.print("* Attach Key");
+  //tft.setCursor(25, yi+=deltay);
+  //tft.print("* Select: Calibrate/SWR Cal from menu");
   tft.setCursor(25, yi+=deltay);
-  tft.print("* Attach Key");
-  tft.setCursor(25, yi+=deltay);
-  tft.print("* Select: Calibrate/SWR Cal from menu");
-  tft.setCursor(25, yi+=deltay);
-  tft.print("* Press Key to start CW output");
-  tft.setCursor(25, yi+=deltay);
-  tft.print("* Hold key down for 5 seconds");
-  tft.setCursor(25, yi+=deltay);
-  tft.print("* Release Key");
+  tft.print("* Press User3 button to run calibration sequence");
+  //tft.setCursor(25, yi+=deltay);
+  //tft.print("* Press Key to start CW output");
+  //tft.setCursor(25, yi+=deltay);
+  //tft.print("* Hold key down for 5 seconds");
+  //tft.setCursor(25, yi+=deltay);
+  //tft.print("* Release Key");
   tft.setCursor(25, yi+=deltay);
   tft.print("* Press Select to Save/Exit");
 
-  SWR_R_Offset[currentBand] = 0;
-  float C = 0;
+  tft.setFontScale((enum RA8875tsize)1);
+  tft.setTextColor(RA8875_GREEN);
+  tft.setCursor(50, 160);
+  tft.print("SWR Reading");
+ 
+  tft.fillRect(450, 160, 150, 35, RA8875_BLACK);
+  tft.setCursor(450, 160);
+  tft.setFontScale((enum RA8875tsize)1);
+  tft.setTextColor(RA8875_CYAN);
+  tft.print(swr, 1);
+
   while (1) {
     tft.setFontScale((enum RA8875tsize)1);
     tft.setTextColor(RA8875_CYAN);
-  
-    //EEPROMWrite();
-    if (digitalRead(paddleDit) == LOW) {
-      digitalWrite(RXTX, HIGH);  //Turns on relay
-      si5351.output_enable(SI5351_CLK2, 1);
-      digitalWrite(CW_ON_OFF, CW_ON);
-      digitalWrite(CAL, CAL_OFF);  // Route signal to TX output
-      radioState = CW_TRANSMIT_STRAIGHT_STATE;
-      ShowTransmitReceiveStatus();
 
-      read_SWR();
-      
-      tft.fillRect(450, 130, 150, 35, RA8875_BLACK);
-      tft.setCursor(450, 130);
-      tft.print(Pf_W,1);
-      tft.print(" W");
-    
-      tft.fillRect(450, 160, 150, 35, RA8875_BLACK);
-      tft.setCursor(450, 160);
-      tft.print(Pr_W, 1);
-      tft.print(" W");
+    val = ReadSelectedPushButton();
+    if (val != BOGUS_PIN_READ)  // Any button press??
+    {
+      if (val == CAL_SWR_RUN)
+      { 
+        SWR_R_Offset[currentBand] = 0;
+        SWR_R_SlopeAdj[currentBand] = 0;
 
-    } else {
-      if (digitalRead(paddleDit) == HIGH) {
-        digitalWrite(RXTX, LOW);  //Turns on relay
+        #define NPF 10
+        float Pfwd[NPF] = {0};
+        float ADCrd[NPF] = {0};
+        uint8_t kp=0;
+
+        // Turn on and measure the power at a range of attenuations
+        Serial.println("Turning on transmit");
+        // Turn transmit on and then measure power and ADC
+        digitalWrite(RXTX, HIGH);  //Turns on relay
+        si5351.output_enable(SI5351_CLK2, 1);
+        digitalWrite(CW_ON_OFF, CW_ON);
+        digitalWrite(CAL, CAL_OFF);  // Route signal to TX output
+        radioState = CW_TRANSMIT_STRAIGHT_STATE;
+        ShowTransmitReceiveStatus();
+
+        const uint8_t max_atten = 5;
+        float atts[2*max_atten+1];
+        float adcs[2*max_atten+1];
+        float Pf[2*max_atten+1];
+        Serial.println("Att,ADC,Pfwd");
+        for (int k=0; k<(2*max_atten+1); k++)
+        {
+          SetRF_OutAtten(XAttenCW[currentBand]+k);
+          kp = 0;
+          for (int p=0; p<200; p++){
+            read_SWR();
+            Pfwd[kp] = Pf_dBm;
+            ADCrd[kp++] = adcR_sRaw;
+            if(kp == NPF) kp = 0;
+          }
+          float ADC0 = 0;
+          float P0 = 0;
+          for (size_t q =0; q<NPF; q++){
+            ADC0 += ADCrd[q];
+            P0 += Pfwd[q];
+          }
+          atts[k] = (float)k / 2;
+          adcs[k] = ADC0 / NPF;
+          Pf[k] = P0 / NPF;
+          Serial.print(atts[k],1); Serial.print(","); Serial.print(adcs[k],1);
+          Serial.print(","); Serial.println(Pf[k],1);
+        }
+
+        Serial.println("Turning off transmit");
+        digitalWrite(RXTX, LOW);  //Turns off relay
         digitalWrite(CW_ON_OFF, CW_OFF);
         si5351.output_enable(SI5351_CLK2, 0);
         radioState = CW_RECEIVE;
         ShowTransmitReceiveStatus();
 
-        // Calculate the correction factor
-        C = adcF_sRaw - adcR_sRaw - 250*log10f(9);
+        // Do each of the slope and intercept calcs
+        for (int k=1; k<(2*max_atten+1); k++){
+          float numerator = (adcs[0] - adcs[k]);
+          float denominator = (atts[k]-atts[0]);
+          float slopek = numerator/denominator - 25.0;
+          //Serial.print("numerator_k = "); Serial.println(numerator,2);
+          //Serial.print("denominator_k = "); Serial.println(denominator,2);
+          Serial.print("slope_k = "); Serial.println(slopek,2);
+          SWR_R_SlopeAdj[currentBand] += slopek;
+        }
+        SWR_R_SlopeAdj[currentBand] = SWR_R_SlopeAdj[currentBand]/(2*(float)max_atten);
+        Serial.print("R slope adj = "); Serial.println(SWR_R_SlopeAdj[currentBand],2);
 
-        tft.setCursor(450, 190);
-        tft.fillRect(450, 190, 100, 35, RA8875_BLACK);
-        tft.print(C, 1);
-        tft.print(" mV");
+        Serial.println("Att,Pact,Offset");
+        SWR_R_Offset[currentBand] = 0;
+        for (int k=0; k<(2*max_atten+1); k++){
+          float Pactual_dBm = Pf[k]-10*log10f(9.0); // CHECK THIS
+          Serial.print(atts[k],1); Serial.print(",");
+          Serial.print(Pactual_dBm,2); Serial.print(",");
+          float offsetk = Pactual_dBm - adcs[k]/(25+SWR_R_SlopeAdj[currentBand]) 
+                                    + 84 - PAD_ATTENUATION_DB - COUPLER_ATTENUATION_DB;
+          Serial.println(offsetk,2);
+          SWR_R_Offset[currentBand] += offsetk;
+        }
+        SWR_R_Offset[currentBand] = SWR_R_Offset[currentBand]/(2*(float)max_atten+1.0);
+        Serial.print("R offset    = "); Serial.println(SWR_R_Offset[currentBand],2);
+
+        // Now calculate the corrected nominal power
+        float corrected = adcs[0]/(25+SWR_R_SlopeAdj[currentBand])-84 + SWR_R_Offset[currentBand] + PAD_ATTENUATION_DB + COUPLER_ATTENUATION_DB;
+        Serial.print("P rev corrected [dBm] = "); Serial.println(corrected,2);
+
+        float revP = pow(10,corrected/10);
+        float fwdP = pow(10,Pf[0]/10);
+        float A = pow(revP / fwdP, 0.5);
+        swr = (1.0 + A) / (1.0 - A);
+        Serial.print("SWR corrected [dBm] = "); Serial.println(swr,1);
+
+        tft.fillRect(450, 160, 150, 35, RA8875_BLACK);
+        tft.setCursor(450, 160);
+        tft.setFontScale((enum RA8875tsize)1);
+        tft.setTextColor(RA8875_CYAN);
+        tft.print(swr, 1);
 
       }
-    }
 
-    val = ReadSelectedPushButton();
-    if (val != BOGUS_PIN_READ)  // Any button press??
-    {
-      val = ProcessButtonPress(val);  // Use ladder value to get menu choice
-      if (val == MENU_OPTION_SELECT)  // Yep. Make a choice??
-      {
-        SWR_R_Offset[currentBand] = C;
-
-        Serial.print("Correction = ");
-        Serial.println(C);
+      if (val == MENU_OPTION_SELECT){
+        SetRF_OutAtten(XAttenCW[currentBand]);
 
         lastState = CW_TRANSMIT_STRAIGHT_STATE;
        // centerFreq = centerFreq + IFFreq - NCOFreq;
@@ -2308,7 +2434,6 @@ void DoSWRCal() {
         //UpdateInfoWindow();
         break;
       }
-      break;
       
     }
   }

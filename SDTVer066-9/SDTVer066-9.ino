@@ -758,7 +758,7 @@ const char *secondaryChoices[][14] = {
   { "On", "Off", "EQRcSet", "Cancel" },                                                                                   // index = 9                                                                                // EQ Rec         9
   { "On", "Off", "EQTxSet", "Cancel" },                                                                                   // EQ Trx         10
 
-  { "Freq Cal", "Rec IQ Cal", "Xmit IQ Cal", "SSB PA Cal", "CW PA Cal", "Two Tone Test", "R Freq Offset", "SWR Cal","Cancel" },  // Calibrate      11
+  { "Freq Cal", "Rec IQ Cal", "Xmit IQ Cal", "CW PA Cal", "SSB PA Cal", "Two Tone Test", "R Freq Offset", "SWR Cal","Cancel" },  // Calibrate      11
 
   //#if !defined(EXCLUDE_BEARING)
   { "Set Prefix", "Cancel" },

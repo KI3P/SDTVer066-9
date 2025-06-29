@@ -178,6 +178,8 @@ extern struct maps myMapFiles[];
 #define CAL_AUTOCAL 13
 #define CAL_DIRECTIONS 14
 #define CAL_TOGGLE_ATTENUATOR 15
+#define CAL_PA_RUN 17
+#define CAL_SWR_RUN 17
 #define BODE_BPF_BYPASS 13
 #define BODE_SAVE 14
 #define BODE_BAND 16

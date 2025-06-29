@@ -49,27 +49,17 @@ int CalibrateOptions(int IQChoice) {
       return IQChoice;
       break;
 
-    case 3:  // SSB PA power out Cal
-
-      //tft.clearScreen(RA8875_BLACK);
-
-      SSB_PA_Calibrate();
-      //MyDelay(1000);
-
-
-      //IQChoice = 8;
-      //return IQChoice;
-      break;
-
-    case 4:  // CW PA power out Cal
+    case 3:  // CW PA power out Cal
       calOnFlag = 1;
       tft.clearScreen(RA8875_BLACK);
       CW_PA_CalFlag = 1;
       CW_PA_Calibrate();  // Do CW PA Cal
       CW_PA_CalFlag = 0;
       calOnFlag = 0;
-      //IQChoice = 8;
-      //return IQChoice;
+      break;
+
+    case 4:  // SSB PA power out Cal
+      SSB_PA_Calibrate();
       break;
 
     case 5:  // Two Tone
