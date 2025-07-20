@@ -2295,11 +2295,11 @@ void DoSWRCal() {
 
   tft.setFontScale((enum RA8875tsize)1);
   tft.setTextColor(RA8875_GREEN);
-  tft.setCursor(50, 160);
+  tft.setCursor(50, 210);
   tft.print("SWR Reading");
  
-  tft.fillRect(450, 160, 150, 35, RA8875_BLACK);
-  tft.setCursor(450, 160);
+  tft.fillRect(450, 210, 150, 35, RA8875_BLACK);
+  tft.setCursor(450, 210);
   tft.setFontScale((enum RA8875tsize)1);
   tft.setTextColor(RA8875_CYAN);
   tft.print(swr, 1);
@@ -2382,7 +2382,7 @@ void DoSWRCal() {
         Serial.println("Att,Pact,Offset");
         SWR_R_Offset[currentBand] = 0;
         for (int k=0; k<(2*max_atten+1); k++){
-          float Pactual_dBm = Pf[k]-10*log10f(9.0); // CHECK THIS
+          float Pactual_dBm = Pf[k]-10*log10f(9.0); // Assumes 100 Ohm load
           Serial.print(atts[k],1); Serial.print(",");
           Serial.print(Pactual_dBm,2); Serial.print(",");
           float offsetk = Pactual_dBm - adcs[k]/(25+SWR_R_SlopeAdj[currentBand]) 
@@ -2403,8 +2403,8 @@ void DoSWRCal() {
         swr = (1.0 + A) / (1.0 - A);
         Serial.print("SWR corrected [dBm] = "); Serial.println(swr,1);
 
-        tft.fillRect(450, 160, 150, 35, RA8875_BLACK);
-        tft.setCursor(450, 160);
+        tft.fillRect(450, 210, 150, 35, RA8875_BLACK);
+        tft.setCursor(450, 210);
         tft.setFontScale((enum RA8875tsize)1);
         tft.setTextColor(RA8875_CYAN);
         tft.print(swr, 1);
