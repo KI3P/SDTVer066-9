@@ -1574,7 +1574,7 @@ void TwoToneTest() {  //AFP 02-01-25
   IQCalFlag = 0;
   IQChoice = 5;
   int task = -100;
-  int lastUsedTask = -2;
+  //int lastUsedTask = -2;
   static int val;
   static int corrChange;
   float secondFreq;
@@ -1759,7 +1759,7 @@ void TwoToneTest() {  //AFP 02-01-25
       ExciterIQData();      
     }  // end while (digitalRead(PTT) == LOW)
 
-    if (task != -1) lastUsedTask = task;  //  Save the last used task.
+    //if (task != -1) lastUsedTask = task;  //  Save the last used task.
 
     digitalWrite(RXTX, LOW);
     if (val == MENU_OPTION_SELECT) {
@@ -1817,6 +1817,7 @@ void TwoToneTest() {  //AFP 02-01-25
       void
  *****/
 void CW_PA_Calibrate() {
+  Linear2DRegression *linear2DRegression = new Linear2DRegression();
   int val = 0;
   Clk2SetFreq = (centerFreq + NCOFreq + CWToneOffsetsHz[EEPROMData.CWToneIndex]) * SI5351_FREQ_MULT;
   tft.clearScreen(RA8875_BLACK);
@@ -1872,8 +1873,10 @@ void CW_PA_Calibrate() {
   powerOutCW[currentBand] = transmitPowerLevelCW;
   SWR_F_Offset[currentBand] = 0;
   SWR_F_SlopeAdj[currentBand] = 0;
+  SWR_R_Offset[currentBand] = 0;
+  SWR_R_SlopeAdj[currentBand] = 0;
   #define NPF 10
-  float pfd[NPF] = {0};
+  //float pfd[NPF] = {0};
   float ADCfd[NPF] = {0};
   uint8_t kp=0;
   tft.setFontScale((enum RA8875tsize)1);
@@ -1934,7 +1937,7 @@ void CW_PA_Calibrate() {
     if (state == 1){
       read_SWR();
       ADCfd[kp] = adcF_sRaw;
-      pfd[kp++] = Pf_dBm;
+      //pfd[kp++] = Pf_dBm;
       if(kp == NPF) kp = 0;
       tft.setCursor(450, 190);
       tft.fillRect(450, 190, 100, 35, RA8875_BLACK);
@@ -1961,7 +1964,7 @@ void CW_PA_Calibrate() {
         const uint8_t max_atten = 10;
         float atts[2*max_atten+1];
         float adcs[2*max_atten+1];
-        Serial.println("Att,ADC");
+        Serial.println("Att,ADC,Slope");
         for (int k=0; k<(2*max_atten+1); k++)
         {
           SetRF_OutAtten(XAttenCW[currentBand]+k);
@@ -1977,7 +1980,12 @@ void CW_PA_Calibrate() {
           }
           atts[k] = (float)k / 2;
           adcs[k] = ADC0 / NPF;
-          Serial.print(atts[k],1); Serial.print(","); Serial.println(adcs[k],1);
+          Serial.print(atts[k],1); Serial.print(","); Serial.print(adcs[k],1);
+
+          linear2DRegression->addPoint(-atts[k],adcs[k]);
+          float c = linear2DRegression->calculate(0);
+          float m = -1*(linear2DRegression->calculate(-1)-c);
+          Serial.print(","); Serial.println(m,2);
         }
 
         Serial.println("Turning off transmit");
@@ -1988,17 +1996,11 @@ void CW_PA_Calibrate() {
         ShowTransmitReceiveStatus();
 
         // Do each of the slope and intercept calcs
-        SWR_F_SlopeAdj[currentBand] = 0;
-        for (int k=1; k<(2*max_atten+1); k++){
-          float numerator = (adcs[0] - adcs[k]);
-          float denominator = (atts[k]-atts[0]);
-          float slopek = numerator/denominator - 25.0;
-          //Serial.print("numerator_k = "); Serial.println(numerator,2);
-          //Serial.print("denominator_k = "); Serial.println(denominator,2);
-          //Serial.print("slope_k = "); Serial.println(slopek,2);
-          SWR_F_SlopeAdj[currentBand] += slopek;
-        }
-        SWR_F_SlopeAdj[currentBand] = SWR_F_SlopeAdj[currentBand]/(2*(float)max_atten);
+
+        float c = linear2DRegression->calculate(0);
+        float m = -1*(linear2DRegression->calculate(-1)-c);
+        SWR_F_SlopeAdj[currentBand] = m - 25;
+
         Serial.print("F slope adj = "); Serial.println(SWR_F_SlopeAdj[currentBand],2);
         Serial.println("Att,Pact,Offset");
         SWR_F_Offset[currentBand] = 0;
@@ -2241,6 +2243,7 @@ void SSB_PA_Calibrate() {
       void
  *****/
 void DoSWRCal() {
+  Linear2DRegression *linear2DRegression = new Linear2DRegression();
   int val = 0;
   Clk2SetFreq = (centerFreq + NCOFreq + CWToneOffsetsHz[EEPROMData.CWToneIndex]) * SI5351_FREQ_MULT;
   tft.clearScreen(RA8875_BLACK);
@@ -2260,12 +2263,27 @@ void DoSWRCal() {
   tft.setCursor(150, 70);
   tft.print("Calibrate SWR");
   tft.setTextColor(RA8875_CYAN);
+
   tft.setCursor(50, 130);
-  tft.print("Forward Power");
+  tft.print("Slope adjust");
+  tft.fillRect(450, 130, 150, 35, RA8875_BLACK);
+  tft.setCursor(450, 130);
+  tft.print(SWR_R_SlopeAdj[currentBand], 2);
+  
   tft.setCursor(50, 160);
-  tft.print("Reflected Power");
+  tft.print("Intercept adjust");
+  tft.fillRect(450, 160, 150, 35, RA8875_BLACK);
+  tft.setCursor(450, 160);
+  tft.print(SWR_R_Offset[currentBand], 2);
+  
   tft.setCursor(50, 190);
-  tft.print("Reflected Cal Factor");
+  tft.print("SWR Reading");
+  tft.fillRect(450, 190, 150, 35, RA8875_BLACK);
+  tft.setCursor(450, 190);
+  tft.setFontScale((enum RA8875tsize)1);
+  tft.setTextColor(RA8875_CYAN);
+  tft.print(swr, 1);
+
   //===========
   tft.setFontScale((enum RA8875tsize)0);
   tft.setTextColor(RA8875_CYAN);
@@ -2293,17 +2311,6 @@ void DoSWRCal() {
   tft.setCursor(25, yi+=deltay);
   tft.print("* Press Select to Save/Exit");
 
-  tft.setFontScale((enum RA8875tsize)1);
-  tft.setTextColor(RA8875_GREEN);
-  tft.setCursor(50, 210);
-  tft.print("SWR Reading");
- 
-  tft.fillRect(450, 210, 150, 35, RA8875_BLACK);
-  tft.setCursor(450, 210);
-  tft.setFontScale((enum RA8875tsize)1);
-  tft.setTextColor(RA8875_CYAN);
-  tft.print(swr, 1);
-
   while (1) {
     tft.setFontScale((enum RA8875tsize)1);
     tft.setTextColor(RA8875_CYAN);
@@ -2313,6 +2320,7 @@ void DoSWRCal() {
     {
       if (val == CAL_SWR_RUN)
       { 
+        linear2DRegression->reset();
         SWR_R_Offset[currentBand] = 0;
         SWR_R_SlopeAdj[currentBand] = 0;
 
@@ -2331,11 +2339,11 @@ void DoSWRCal() {
         radioState = CW_TRANSMIT_STRAIGHT_STATE;
         ShowTransmitReceiveStatus();
 
-        const uint8_t max_atten = 5;
+        const uint8_t max_atten = 10;
         float atts[2*max_atten+1];
         float adcs[2*max_atten+1];
         float Pf[2*max_atten+1];
-        Serial.println("Att,ADC,Pfwd");
+        Serial.println("Att,ADC,Slope");
         for (int k=0; k<(2*max_atten+1); k++)
         {
           SetRF_OutAtten(XAttenCW[currentBand]+k);
@@ -2356,7 +2364,12 @@ void DoSWRCal() {
           adcs[k] = ADC0 / NPF;
           Pf[k] = P0 / NPF;
           Serial.print(atts[k],1); Serial.print(","); Serial.print(adcs[k],1);
-          Serial.print(","); Serial.println(Pf[k],1);
+          //Serial.print(","); Serial.println(Pf[k],1);
+
+          linear2DRegression->addPoint(-atts[k],adcs[k]);
+          float c = linear2DRegression->calculate(0);
+          float m = -1*(linear2DRegression->calculate(-1)-c);
+          Serial.print(","); Serial.println(m,2);
         }
 
         Serial.println("Turning off transmit");
@@ -2367,16 +2380,20 @@ void DoSWRCal() {
         ShowTransmitReceiveStatus();
 
         // Do each of the slope and intercept calcs
-        for (int k=1; k<(2*max_atten+1); k++){
-          float numerator = (adcs[0] - adcs[k]);
-          float denominator = (atts[k]-atts[0]);
-          float slopek = numerator/denominator - 25.0;
+        //for (int k=1; k<(2*max_atten+1); k++){
+        //  float numerator = (adcs[0] - adcs[k]);
+        //  float denominator = (atts[k]-atts[0]);
+        //  float slopek = numerator/denominator - 25.0;
           //Serial.print("numerator_k = "); Serial.println(numerator,2);
           //Serial.print("denominator_k = "); Serial.println(denominator,2);
-          Serial.print("slope_k = "); Serial.println(slopek,2);
-          SWR_R_SlopeAdj[currentBand] += slopek;
-        }
-        SWR_R_SlopeAdj[currentBand] = SWR_R_SlopeAdj[currentBand]/(2*(float)max_atten);
+        //  Serial.print("slope_k = "); Serial.println(slopek,2);
+        //  SWR_R_SlopeAdj[currentBand] += slopek;
+        //}
+        //SWR_R_SlopeAdj[currentBand] = SWR_R_SlopeAdj[currentBand]/(2*(float)max_atten);
+
+        float c = linear2DRegression->calculate(0);
+        float m = -1*(linear2DRegression->calculate(-1)-c);
+        SWR_R_SlopeAdj[currentBand] = m - 25;
         Serial.print("R slope adj = "); Serial.println(SWR_R_SlopeAdj[currentBand],2);
 
         Serial.println("Att,Pact,Offset");
@@ -2403,12 +2420,20 @@ void DoSWRCal() {
         swr = (1.0 + A) / (1.0 - A);
         Serial.print("SWR corrected [dBm] = "); Serial.println(swr,1);
 
-        tft.fillRect(450, 210, 150, 35, RA8875_BLACK);
-        tft.setCursor(450, 210);
-        tft.setFontScale((enum RA8875tsize)1);
+        tft.fillRect(450, 130, 150, 35, RA8875_BLACK);
+        tft.setCursor(450, 130);
+        tft.setTextColor(RA8875_CYAN);
+        tft.print(SWR_R_SlopeAdj[currentBand], 2);
+
+        tft.fillRect(450, 160, 150, 35, RA8875_BLACK);
+        tft.setCursor(450, 160);
+        tft.setTextColor(RA8875_CYAN);
+        tft.print(SWR_R_Offset[currentBand], 2);
+        
+        tft.fillRect(450, 190, 150, 35, RA8875_BLACK);
+        tft.setCursor(450, 190);
         tft.setTextColor(RA8875_CYAN);
         tft.print(swr, 1);
-
       }
 
       if (val == MENU_OPTION_SELECT){
