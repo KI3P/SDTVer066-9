@@ -776,8 +776,7 @@ int ChangeBand(long f, bool updateRelays) {
   }
 
 
-  RFControl_Enable_Prescaler(currentBand==BAND_630M || currentBand==BAND_160M);
-
+  //RFControl_Enable_Prescaler(currentBand==BAND_630M || currentBand==BAND_160M);
 
   return b;
 }

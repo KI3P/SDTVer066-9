@@ -4,7 +4,7 @@
 
 #include "CAT.h"
 
-#ifdef CAT
+#ifdef V12_CAT
 // Kenwood TS2000 CAT Interface - Minimal support for WDSP-X
 //
 // Note that this uses SerialUSB1 for the CAT interface.
@@ -15,9 +15,9 @@
 // Uncomment to see CAT messages on the Serial Output
 //#define DEBUG_CAT
 
-#if !defined(FRONTPANEL)
-int my_ptt=HIGH; // active LOW
-#endif // FRONTPANEL
+//#if !defined(FRONTPANEL)
+//int my_ptt=HIGH; // active LOW
+//#endif // FRONTPANEL
 bool catTX=false;
 static char catCommand[128];
 static int catCommandIndex=0;
