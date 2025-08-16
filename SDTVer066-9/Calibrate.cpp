@@ -1124,7 +1124,7 @@ void DoXmitIQCalibrate() {
   centerFreq = centerFreq - IFFreq + NCOFreq;
   SetFreq();
   digitalWrite(XMIT_MODE, XMIT_SSB);
-  currentRF_OutAtten = 3;
+  currentRF_OutAtten = 10;
   if (currentRF_OutAtten > 63) currentRF_OutAtten = 63;
   if (currentRF_OutAtten < 0) currentRF_OutAtten = 0;
   SetRF_OutAtten(currentRF_OutAtten);

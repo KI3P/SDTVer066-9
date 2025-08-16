@@ -660,7 +660,7 @@ extern int radioState, lastState;  // Used by the loop to monitor current state.
 #define BAND_4M 11
 
 #define FIRST_BAND BAND_160M
-#define LAST_BAND BAND_6M // Change this to BAND_4M if permitted by your license
+#define LAST_BAND BAND_6M // Change this to BAND_4M if permitted
 #define STARTUP_BAND BAND_40M
 #define NUMBER_OF_BANDS 12
 
