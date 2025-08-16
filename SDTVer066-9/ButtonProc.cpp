@@ -15,8 +15,8 @@
 void ButtonBandIncrease() {
   int tempIndex;
   tempIndex = currentBandA;
-  if (currentBand == NUMBER_OF_BANDS) {  // Incremented too far?
-    currentBand = 0;                     // Yep. Roll to list front.
+  if (currentBand > LAST_BAND) {  // Incremented too far?
+    currentBand = FIRST_BAND;                     // Yep. Roll to list front.
   }
   NCOFreq = 0L;
   switch (activeVFO) {
@@ -37,8 +37,8 @@ void ButtonBandIncrease() {
         }
       }
       currentBandA++;
-      if (currentBandA == NUMBER_OF_BANDS) {  // Incremented too far?
-        currentBandA = 0;                     // Yep. Roll to list front.
+      if (currentBandA > LAST_BAND) {  // Incremented too far?
+        currentBandA = FIRST_BAND;                     // Yep. Roll to list front.
       }
       currentBand = currentBandA;
       centerFreq = TxRxFreq = currentFreqA = lastFrequencies[currentBandA][VFO_A] + NCOFreq;
@@ -61,8 +61,8 @@ void ButtonBandIncrease() {
         }
       }
       currentBandB++;
-      if (currentBandB == NUMBER_OF_BANDS) {  // Incremented too far?
-        currentBandB = 0;                     // Yep. Roll to list front.
+      if (currentBandB > LAST_BAND) {  // Incremented too far?
+        currentBandB = FIRST_BAND;                     // Yep. Roll to list front.
       }
       currentBand = currentBandB;
       centerFreq = TxRxFreq = currentFreqB = lastFrequencies[currentBandB][VFO_B] + NCOFreq;
@@ -107,8 +107,8 @@ void ButtonBandDecrease() {
 
   currentBand--;  // decrement band index
 
-  if (currentBand < 0) {                // decremented too far?
-    currentBand = NUMBER_OF_BANDS - 1;  // Yep. Roll to list end.
+  if (currentBand < FIRST_BAND) {                // decremented too far?
+    currentBand = LAST_BAND;  // Yep. Roll to list end.
   }
 
   switch (activeVFO) {
@@ -129,11 +129,11 @@ void ButtonBandDecrease() {
         }
       }
       currentBandA--;
-      if (currentBandA == NUMBER_OF_BANDS) {  // decremented too far?
-        currentBandA = 0;                     // Yep. Roll to list front.
+      if (currentBandA > LAST_BAND) {  // decremented too far?
+        currentBandA = FIRST_BAND;                     // Yep. Roll to list front.
       }
-      if (currentBandA < 0) {                // Incremented too far?
-        currentBandA = NUMBER_OF_BANDS - 1;  // Yep. Roll to list front.
+      if (currentBandA < FIRST_BAND) {                // Incremented too far?
+        currentBandA = LAST_BAND;  // Yep. Roll to list front.
       }
       currentBand = currentBandA;
       centerFreq = TxRxFreq = currentFreqA = lastFrequencies[currentBandA][VFO_A] + NCOFreq;
@@ -156,11 +156,11 @@ void ButtonBandDecrease() {
         }
       }
       currentBandB--;
-      if (currentBandB == NUMBER_OF_BANDS) {  // Incremented too far?
-        currentBandB = 0;                     // Yep. Roll to list front.
+      if (currentBandB > LAST_BAND) {  // Incremented too far?
+        currentBandB = FIRST_BAND;                     // Yep. Roll to list front.
       }
-      if (currentBandB < 0) {                // Incremented too far?
-        currentBandB = NUMBER_OF_BANDS - 1;  // Yep. Roll to list front.
+      if (currentBandB < FIRST_BAND) {                // Incremented too far?
+        currentBandB = LAST_BAND;  // Yep. Roll to list front.
       }
       currentBand = currentBandB;
       centerFreq = TxRxFreq = currentFreqB = lastFrequencies[currentBandB][VFO_B] + NCOFreq;
@@ -581,14 +581,14 @@ void ButtonFrequencyEntry() {
   tft.print("D   Delete last digit");
   tft.setCursor(WATERFALL_LEFT_X + 20, SPECTRUM_TOP_Y + 190);
   tft.print("S   Save Direct to Last Freq. ");
-  tft.setCursor(WATERFALL_LEFT_X + 20, SPECTRUM_TOP_Y + 240);
-  tft.print("Direct Entry was called from "); 
-  tft.print(DE_Band[currentBand]);
-  tft.print(" band");
-  tft.setCursor(WATERFALL_LEFT_X + 20, SPECTRUM_TOP_Y + 270);
-  tft.print("Frequency response limited above "); 
-  tft.print(DE_Flimit[currentBand]);
-  tft.print("MHz");
+  //tft.setCursor(WATERFALL_LEFT_X + 20, SPECTRUM_TOP_Y + 240);
+  //tft.print("Direct Entry was called from "); 
+  //tft.print(DE_Band[currentBand]);
+  //tft.print(" band");
+  //tft.setCursor(WATERFALL_LEFT_X + 20, SPECTRUM_TOP_Y + 270);
+  //tft.print("Frequency response limited above "); 
+  //tft.print(DE_Flimit[currentBand]);
+  //tft.print("MHz");
   tft.setCursor(WATERFALL_LEFT_X + 20, SPECTRUM_TOP_Y + 300);
   tft.print("For widest direct entry frequency range"); 
   tft.setCursor(WATERFALL_LEFT_X + 20, SPECTRUM_TOP_Y + 330);
@@ -646,7 +646,7 @@ void ButtonFrequencyEntry() {
           if ((numdigits == 4) || (numdigits == 5)) {
             enteredF = enteredF * 1000;
           }
-          if ((enteredF > 30000000) || (enteredF < 1250000)) {
+          if ((enteredF > 125000000) || (enteredF < 250000)) {
             stringF = "     ";  // 5 spaces
             stringF.toCharArray(strF, stringF.length());
             numdigits = 0;

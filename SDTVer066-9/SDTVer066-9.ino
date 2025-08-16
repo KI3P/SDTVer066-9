@@ -645,7 +645,7 @@ struct maps myMapFiles[10] = {
   { "", 0.0, 0.0 }
 };
 
-bool save_last_frequency = false;
+bool save_last_frequency = true;
 struct band bands[NUMBER_OF_BANDS] =  //AFP Changed 1-30-21 // G0ORX Changed AGC to 20
   {
 //freq    band low   band hi   name    mode      Low    Hi  Gain  type    gain  AGC   pixel
@@ -657,7 +657,7 @@ struct band bands[NUMBER_OF_BANDS] =  //AFP Changed 1-30-21 // G0ORX Changed AGC
 
 
 //475000,  472000,  479000, "630M", DEMOD_USB, 3000, 200, 1, HAM_BAND, 8.5, 20, 20,    // 630M
-//1850000, 1800000, 2000000, "160M", DEMOD_USB, 3000, 200, 1, HAM_BAND, 8.5, 20, 20,    // 160M
+1850000, 1800000, 2000000, "160M", DEMOD_USB, 3000, 200, 1, HAM_BAND, 8.5, 20, 20,    // 160M
 #if defined(ITU_REGION) && ITU_REGION == 1
     3700000, 3500000, 3800000, "80M", DEMOD_LSB, -200, -3000, 1, HAM_BAND, -2.0, 20, 20,
     5351500, 5351500, 5366600, "60M", DEMOD_LSB, -200, -3000, 1, HAM_BAND, -2.0, 20, 20,  // 60M
@@ -678,7 +678,7 @@ struct band bands[NUMBER_OF_BANDS] =  //AFP Changed 1-30-21 // G0ORX Changed AGC
     24920000, 24890000, 24990000, "12M", DEMOD_USB, 3000, 200, 1, HAM_BAND, 6.0, 20, 20,
     28350000, 28000000, 29700000, "10M", DEMOD_USB, 3000, 200, 1, HAM_BAND, 8.5, 20, 20,
     50100000, 50000000, 54000000, "6M", DEMOD_USB, 3000, 200, 1, HAM_BAND, 8.5, 20, 20,  // 6M
-    //70300000, 70000000, 72800000, "4M", DEMOD_USB, 3000, 200, 1, HAM_BAND, 8.5, 20, 20,   // 4M
+    70300000, 70000000, 72800000, "4M", DEMOD_USB, 3000, 200, 1, HAM_BAND, 8.5, 20, 20,   // 4M
     //142000000, 144000000, 148000000, "2M", DEMOD_USB, 3000, 200, 1, HAM_BAND, 8.5, 20, 20,   // 2M
     //	222500000, 220000000, 225000000, "125CM", DEMOD_USB, 3000, 200, 1, HAM_BAND, 8.5, 20, 20,   // 125CM
     //435000000, 420000000, 450000000, "70CM",  DEMOD_USB, 3000, 200, 1, HAM_BAND, 8.5, 20, 20,   // 70CM
@@ -687,24 +687,24 @@ struct band bands[NUMBER_OF_BANDS] =  //AFP Changed 1-30-21 // G0ORX Changed AGC
 
   };
 
-float32_t IQAmpCorrectionFactor[NUMBER_OF_BANDS] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-float32_t IQPhaseCorrectionFactor[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-float32_t IQXAmpCorrectionFactor[NUMBER_OF_BANDS] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-float32_t IQXPhaseCorrectionFactor[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-float32_t IQXRecAmpCorrectionFactor[NUMBER_OF_BANDS] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-float32_t IQXRecPhaseCorrectionFactor[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-float32_t powerOutSSB[NUMBER_OF_BANDS] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
-float32_t powerOutCW[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-float32_t CWPowerCalibrationFactor[NUMBER_OF_BANDS] = { 0.019, 0.019, 0.019, 0.019, 0.0190, .0190, .0190, .0190, .0190, .0190 };
-float32_t SSBPowerCalibrationFactor[NUMBER_OF_BANDS] = { 0.008, 0.008, 0.008, 0.008, 0.008, 0.008, 0.008, 0.008, 0.008, 0.008 };
+float32_t IQAmpCorrectionFactor[NUMBER_OF_BANDS] = { 1 };
+float32_t IQPhaseCorrectionFactor[NUMBER_OF_BANDS] = { 0 };
+float32_t IQXAmpCorrectionFactor[NUMBER_OF_BANDS] = { 1 };
+float32_t IQXPhaseCorrectionFactor[NUMBER_OF_BANDS] = { 0 };
+float32_t IQXRecAmpCorrectionFactor[NUMBER_OF_BANDS] = { 1 };
+float32_t IQXRecPhaseCorrectionFactor[NUMBER_OF_BANDS] = { 0 };
+float32_t powerOutSSB[NUMBER_OF_BANDS] = { 1 };
+float32_t powerOutCW[NUMBER_OF_BANDS] = { 0 };
+float32_t CWPowerCalibrationFactor[NUMBER_OF_BANDS] = { 0.019 };
+float32_t SSBPowerCalibrationFactor[NUMBER_OF_BANDS] = { 0.008 };
 int XAttenCW[NUMBER_OF_BANDS] = { (int)(float32_t *)c };
-int XAttenSSB[NUMBER_OF_BANDS] = { 10, 10, 10, 10, 10, 10, 10, 10, 10, 10 };
-int RAtten[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-int antennaSelection[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-float SWR_F_SlopeAdj[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-float SWR_R_SlopeAdj[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-float SWR_R_Offset[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-float SWR_F_Offset[NUMBER_OF_BANDS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+int XAttenSSB[NUMBER_OF_BANDS] = { 10 };
+int RAtten[NUMBER_OF_BANDS] = { 0 };
+int antennaSelection[NUMBER_OF_BANDS] = { 0 };
+float SWR_F_SlopeAdj[NUMBER_OF_BANDS] = { 0 };
+float SWR_R_SlopeAdj[NUMBER_OF_BANDS] = { 0 };
+float SWR_R_Offset[NUMBER_OF_BANDS] = { 0 };
+float SWR_F_Offset[NUMBER_OF_BANDS] = { 0 };
 const char *topMenus[] = {
   "RF Set", "CW Options", "VFO Select",
   "EEPROM", "AGC", "Spectrum Options",

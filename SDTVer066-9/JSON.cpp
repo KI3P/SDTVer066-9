@@ -79,6 +79,8 @@ FLASHMEM void loadConfiguration(const char *filename, config_t &EEPROMData) {
   for (int i = 0; i < NUMBER_OF_BANDS; i++) EEPROMData.IQPhaseCorrectionFactor[i] = doc["IQPhaseCorrectionFactor"][i];
   for (int i = 0; i < NUMBER_OF_BANDS; i++) EEPROMData.IQXAmpCorrectionFactor[i] = doc["IQXAmpCorrectionFactor"][i];
   for (int i = 0; i < NUMBER_OF_BANDS; i++) EEPROMData.IQXPhaseCorrectionFactor[i] = doc["IQXPhaseCorrectionFactor"][i];
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) EEPROMData.IQXRecAmpCorrectionFactor[i] = doc["IQXRecAmpCorrectionFactor"][i];
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) EEPROMData.IQXRecPhaseCorrectionFactor[i] = doc["IQXRecPhaseCorrectionFactor"][i];
   for (int i = 0; i < NUMBER_OF_BANDS; i++) EEPROMData.XAttenCW[i] = doc["XAttenCW"][i];
   for (int i = 0; i < NUMBER_OF_BANDS; i++) EEPROMData.XAttenSSB[i] = doc["XAttenSSB"][i];
   for (int i = 0; i < NUMBER_OF_BANDS; i++) EEPROMData.RAtten[i] = doc["RAtten"][i];
@@ -86,6 +88,12 @@ FLASHMEM void loadConfiguration(const char *filename, config_t &EEPROMData) {
   for (int i = 0; i < NUMBER_OF_BANDS; i++) {
     for (int j = 0; j < 2; j++) EEPROMData.lastFrequencies[i][j] = doc["lastFrequencies"][i][j];
   }
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) EEPROMData.antennaSelection[i] = doc["antennaSelection"][i];
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) EEPROMData.currentNoiseFloor[i] = doc["currentNoiseFloor"][i];
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) EEPROMData.SWR_F_Offset[i] = doc["SWR_F_Offset"][i];
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) EEPROMData.SWR_F_SlopeAdj[i] = doc["SWR_F_SlopeAdj"][i];
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) EEPROMData.SWR_R_SlopeAdj[i] = doc["SWR_R_SlopeAdj"][i];
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) EEPROMData.SWR_R_Offset[i] = doc["SWR_R_Offset"][i];
   EEPROMData.centerFreq = doc["centerFreq"];
   strlcpy(EEPROMData.mapFileName, doc["mapFileName"] | "Boston", 50);
   strlcpy(EEPROMData.myCall, doc["myCall"] | "Your Call", 10);
@@ -170,6 +178,8 @@ Serial.println(String(__FUNCTION__)+": "+String(filename));
   for (int i = 0; i < NUMBER_OF_BANDS; i++) doc["SSBPowerCalibrationFactor"][i] = EEPROMData.SSBPowerCalibrationFactor[i];
   for (int i = 0; i < NUMBER_OF_BANDS; i++) doc["IQAmpCorrectionFactor"][i] = EEPROMData.IQAmpCorrectionFactor[i];
   for (int i = 0; i < NUMBER_OF_BANDS; i++) doc["IQPhaseCorrectionFactor"][i] = EEPROMData.IQPhaseCorrectionFactor[i];
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) doc["IQXRecAmpCorrectionFactor"][i] = EEPROMData.IQXRecAmpCorrectionFactor[i];
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) doc["IQXRecPhaseCorrectionFactor"][i] = EEPROMData.IQXRecPhaseCorrectionFactor[i];
   for (int i = 0; i < NUMBER_OF_BANDS; i++) doc["IQXAmpCorrectionFactor"][i] = EEPROMData.IQXAmpCorrectionFactor[i];
   for (int i = 0; i < NUMBER_OF_BANDS; i++) doc["IQXPhaseCorrectionFactor"][i] = EEPROMData.IQXPhaseCorrectionFactor[i];
   for (int i = 0; i < NUMBER_OF_BANDS; i++) doc["XAttenCW"][i] = EEPROMData.XAttenCW[i];
@@ -179,6 +189,12 @@ Serial.println(String(__FUNCTION__)+": "+String(filename));
   for (int i = 0; i < NUMBER_OF_BANDS; i++) {
     for (int j = 0; j < 2; j++) doc["lastFrequencies"][i][j] = EEPROMData.lastFrequencies[i][j];
   }
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) doc["antennaSelection"][i] = EEPROMData.antennaSelection[i];
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) doc["currentNoiseFloor"][i] = EEPROMData.currentNoiseFloor[i];
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) doc["SWR_F_Offset"][i] = EEPROMData.SWR_F_Offset[i];
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) doc["SWR_F_SlopeAdj"][i] = EEPROMData.SWR_F_SlopeAdj[i];
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) doc["SWR_R_SlopeAdj"][i] = EEPROMData.SWR_R_SlopeAdj[i];
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) doc["SWR_R_Offset"][i] = EEPROMData.SWR_R_Offset[i];
   doc["centerFreq"] = EEPROMData.centerFreq;
 
 // User data

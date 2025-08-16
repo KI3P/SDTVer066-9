@@ -71,10 +71,10 @@ void V12_LPFControlInit() {
 *****/
 void setLPFBand(int currentBand) {
   switch (currentBand){
-   // case BAND_160M:
-   //   LPF_GPB_state = LPF_GPB_state & 0b11110000;
-    //  LPF_GPB_state = LPF_GPB_state | LPF_BAND_160M;
-    //  break;
+    case BAND_160M:
+      LPF_GPB_state = LPF_GPB_state & 0b11110000;
+      LPF_GPB_state = LPF_GPB_state | LPF_BAND_160M;
+      break;
     case BAND_80M:
       LPF_GPB_state = LPF_GPB_state & 0b11110000;
       LPF_GPB_state = LPF_GPB_state | LPF_BAND_80M;

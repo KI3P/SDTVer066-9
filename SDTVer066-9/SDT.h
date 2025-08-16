@@ -646,21 +646,23 @@ extern int radioState, lastState;  // Used by the loop to monitor current state.
 #define CW_MESSAGE_WIDTH MAX_WATERFALL_WIDTH  // 512
 #define CW_MESSAGE_HEIGHT 16                  // tft.getFontHeight()
 
-#define BAND_80M 0
-#define BAND_60M 1
-#define BAND_40M 2
-#define BAND_30M 3
-#define BAND_20M 4
-#define BAND_17M 5
-#define BAND_15M 6
-#define BAND_12M 7
-#define BAND_10M 8
-#define BAND_6M 9
+#define BAND_160M 0
+#define BAND_80M 1
+#define BAND_60M 2
+#define BAND_40M 3
+#define BAND_30M 4
+#define BAND_20M 5
+#define BAND_17M 6
+#define BAND_15M 7
+#define BAND_12M 8
+#define BAND_10M 9
+#define BAND_6M 10
+#define BAND_4M 11
 
-#define FIRST_BAND BAND_80M
-#define LAST_BAND BAND_6M  //AFP 1-28-21
+#define FIRST_BAND BAND_160M
+#define LAST_BAND BAND_6M // Change this to BAND_4M if permitted by your license
 #define STARTUP_BAND BAND_40M
-#define NUMBER_OF_BANDS 10  //AFP 1-28-21
+#define NUMBER_OF_BANDS 12
 
 //=== CW Filter ===
 //------------------------- Global CW Filter declarations ----------
