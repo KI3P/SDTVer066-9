@@ -120,6 +120,7 @@ FLASHMEM void EEPROMRead() {
 
   activeVFO = EEPROMData.activeVFO;          // 2 bytes
   freqIncrement = EEPROMData.freqIncrement;  // 4 bytes
+  freqCorrectionFactor = EEPROMData.freqCorrectionFactor;
 
   currentBand = EEPROMData.currentBand;                        // 4 bytes
   currentBandA = EEPROMData.currentBandA;                      // 4 bytes
@@ -215,6 +216,7 @@ FLASHMEM void EEPROMRead() {
   transmitPowerLevelCW = EEPROMData.TransmitPowerLevelCW;    // Power level factors by mode
   transmitPowerLevelSSB = EEPROMData.TransmitPowerLevelSSB;  // Power level factors by mode
 
+  
 }
 
 
@@ -231,49 +233,49 @@ FLASHMEM void EEPROMWrite() {
   strncpy(EEPROMData.versionSettings, EEPROMSetVersion(), 9);  // KF5N
 
   EEPROMData.AGCMode = AGCMode;
-  EEPROMData.CWFilterIndex = CWFilterIndex;
-  EEPROMData.nrOptionSelect = nrOptionSelect;
+  EEPROMData.audioVolume = audioVolume;  // 4 bytes
   EEPROMData.rfGainAllBands = rfGainAllBands;
+  EEPROMData.spectrumNoiseFloor = spectrumNoiseFloor;  // AFP 09-26-22
+  EEPROMData.tuneIndex = tuneIndex;
+  EEPROMData.stepFineTune = stepFineTune;
+  EEPROMData.powerLevel = transmitPowerLevel;
+  EEPROMData.xmtMode = xmtMode;        // AFP 09-26-22
+  EEPROMData.nrOptionSelect = nrOptionSelect;
+  EEPROMData.currentScale = currentScale;
+  EEPROMData.spectrum_zoom = spectrum_zoom;
+  EEPROMData.spectrum_display_scale = spectrum_display_scale;  // 4 bytes
+
+  EEPROMData.CWFilterIndex = CWFilterIndex;
+  EEPROMData.paddleDit = paddleDit;
+  EEPROMData.paddleDah = paddleDah;
+  EEPROMData.decoderFlag = decoderFlag;
+  EEPROMData.keyType = keyType;                          // straight key = 0, keyer = 1
+  EEPROMData.currentWPM = currentWPM;  // 4 bytes
+  EEPROMData.sidetoneVolume = sidetoneVolume;                  // 4 bytes
+  EEPROMData.cwTransmitDelay = cwTransmitDelay;                // 4 bytes
 
   EEPROMData.activeVFO = activeVFO;  // 2 bytes
+  EEPROMData.freqIncrement = freqIncrement;              // 4 bytes
+  EEPROMData.freqCorrectionFactor = freqCorrectionFactor;
 
-  EEPROMData.audioVolume = audioVolume;  // 4 bytes
   EEPROMData.currentBand = currentBand;  // 4 bytes
   EEPROMData.currentBandA = currentBandA;
   EEPROMData.currentBandB = currentBandB;
   EEPROMData.currentFreqA = currentFreqA;  // JJP 7/17/23
   EEPROMData.currentFreqB = currentFreqB;  // JJP 7/17/23
-  EEPROMData.decoderFlag = decoderFlag;
 
   for (int i = 0; i < EQUALIZER_CELL_COUNT; i++) {
     EEPROMData.equalizerRec[i] = recEQ_Level[i];  // 4 bytes each
     EEPROMData.equalizerXmt[i] = xmtEQ_Level[i];
   }
 
-  EEPROMData.freqIncrement = freqIncrement;              // 4 bytes
-  EEPROMData.keyType = keyType;                          // straight key = 0, keyer = 1
   EEPROMData.currentMicThreshold = currentMicThreshold;  // 4 bytes      // AFP 09-22-22
   EEPROMData.currentMicCompRatio = currentMicCompRatio;
   EEPROMData.currentMicAttack = currentMicAttack;
   EEPROMData.currentMicRelease = currentMicRelease;
   EEPROMData.currentMicGain = currentMicGain;
 
-  EEPROMData.paddleDit = paddleDit;
-  EEPROMData.paddleDah = paddleDah;
-  EEPROMData.spectrumNoiseFloor = spectrumNoiseFloor;  // AFP 09-26-22
-
-  EEPROMData.tuneIndex = tuneIndex;
-  EEPROMData.stepFineTune = stepFineTune;
-
-  EEPROMData.powerLevel = transmitPowerLevel;
-  EEPROMData.currentWPM = currentWPM;  // 4 bytes
-  EEPROMData.xmtMode = xmtMode;        // AFP 09-26-22
-
-  EEPROMData.currentScale = currentScale;
-  EEPROMData.spectrum_zoom = spectrum_zoom;
-  EEPROMData.spectrum_display_scale = spectrum_display_scale;  // 4 bytes
-  EEPROMData.sidetoneVolume = sidetoneVolume;                  // 4 bytes
-  EEPROMData.cwTransmitDelay = cwTransmitDelay;                // 4 bytes
+  // EEPROMData.switchValues[i] is not duplicated
 
   EEPROMData.LPFcoeff = LPFcoeff;  // 4 bytes
   EEPROMData.NR_PSI = NR_PSI;      // 4 bytes
@@ -283,10 +285,10 @@ FLASHMEM void EEPROMWrite() {
   EEPROMData.pll_fmax = pll_fmax;  // 4 bytes
 
   for (int i = 0; i < NUMBER_OF_BANDS; i++) {
-    EEPROMData.CWPowerCalibrationFactor[i] = CWPowerCalibrationFactor[i];    // 0.019;   //AFP 10-29-22
-    EEPROMData.SSBPowerCalibrationFactor[i] = SSBPowerCalibrationFactor[i];  // 0.008;   //AFP 10-29-22
     EEPROMData.powerOutCW[i] = powerOutCW[i];                                // 4 bytes //AFP 10-21-22
     EEPROMData.powerOutSSB[i] = powerOutSSB[i];                              // 4 bytes AFP 10-21-22
+    EEPROMData.CWPowerCalibrationFactor[i] = CWPowerCalibrationFactor[i];    // 0.019;   //AFP 10-29-22
+    EEPROMData.SSBPowerCalibrationFactor[i] = SSBPowerCalibrationFactor[i];  // 0.008;   //AFP 10-29-22
     EEPROMData.IQAmpCorrectionFactor[i] = IQAmpCorrectionFactor[i];
     EEPROMData.IQPhaseCorrectionFactor[i] = IQPhaseCorrectionFactor[i];
     EEPROMData.IQXAmpCorrectionFactor[i] = IQXAmpCorrectionFactor[i];
@@ -313,7 +315,6 @@ FLASHMEM void EEPROMWrite() {
   EEPROMData.lastFrequencies[currentBand][activeVFO] = currentFreq;  // 4 bytes
   EEPROMData.lastFrequencies[currentBandA][VFO_A] = currentFreqA;    // 4 bytes
   EEPROMData.lastFrequencies[currentBandB][VFO_B] = currentFreqB;    // 4 bytes
-  //EEPROMData.freqCorrectionFactor = freqCorrectionFactor;
 
   strncpy(EEPROMData.mapFileName, mapFileName, 49);  // 1 smaller to allow for null
   strncpy(EEPROMData.myCall, myCall, 9);
