@@ -992,7 +992,7 @@ int EEPROMOptions() {
 
     case 4:
 #if defined(USE_JSON)
-      EEPROM.get(EEPROM_BASE_ADDRESS + 4, tempConfig);
+      EEPROM.get(EEPROM_BASE_ADDRESS, tempConfig);
       saveConfiguration(filename, tempConfig, true);  // Save EEPROM struct to SD
 #else
       CopyEEPROMToSD();  // Save current EEPROM value to SD

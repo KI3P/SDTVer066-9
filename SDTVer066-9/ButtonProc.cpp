@@ -510,8 +510,8 @@ void ButtonFrequencyEntry() {
   //save_last_frequency = false;                    // prevents crazy frequencies when you change bands/save_last_frequency = true;
   // Arrays for allocating values associated with keys and switches - choose whether USB keypad or analogue switch matrix
   // USB keypad and analogue switch matrix
-  const char *DE_Band[] = {"80m","40m","20m","17m","15m","12m","10m"};
-  const char *DE_Flimit[] = {"4.5","9","16","26","26","30","30"};
+  //const char *DE_Band[] = {"80m","40m","20m","17m","15m","12m","10m"};
+  //const char *DE_Flimit[] = {"4.5","9","16","26","26","30","30"};
   int numKeys[] = { 0x0D, 0x7F, 0x58,  // values to be allocated to each key push
                     0x37, 0x38, 0x39,
                     0x34, 0x35, 0x36,

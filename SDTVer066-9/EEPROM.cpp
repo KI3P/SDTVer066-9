@@ -1052,39 +1052,45 @@ FLASHMEM void EEPROMSaveDefaults2() {
 
 
 #if defined(ITU_REGION) && ITU_REGION == 1
-  EEPROMData.lastFrequencies[0][0] = 3560000L;   // 80 CW
-  EEPROMData.lastFrequencies[1][0] = 5300000L;   // 60 CW
-  EEPROMData.lastFrequencies[2][0] = 7200000L;   // 40
-  EEPROMData.lastFrequencies[3][0] = 10100000L;  // 30
-  EEPROMData.lastFrequencies[4][0] = 14060000L;  // 20
-  EEPROMData.lastFrequencies[5][0] = 18096000L;  // 17
-  EEPROMData.lastFrequencies[6][0] = 21060000L;  // 15
-  EEPROMData.lastFrequencies[7][0] = 24906000L;  // 12
-  EEPROMData.lastFrequencies[8][0] = 28060000L;  // 10
-  EEPROMData.lastFrequencies[9][0] = 50100000L;  // 6
+  EEPROMData.lastFrequencies[0][0] = 1850000L;   // 160 CW
+  EEPROMData.lastFrequencies[1][0] = 3560000L;   // 80 CW
+  EEPROMData.lastFrequencies[2][0] = 5300000L;   // 60 CW
+  EEPROMData.lastFrequencies[3][0] = 7200000L;   // 40
+  EEPROMData.lastFrequencies[4][0] = 10100000L;  // 30
+  EEPROMData.lastFrequencies[5][0] = 14060000L;  // 20
+  EEPROMData.lastFrequencies[6][0] = 18096000L;  // 17
+  EEPROMData.lastFrequencies[7][0] = 21060000L;  // 15
+  EEPROMData.lastFrequencies[8][0] = 24906000L;  // 12
+  EEPROMData.lastFrequencies[9][0] = 28060000L;  // 10
+  EEPROMData.lastFrequencies[10][0] = 50100000L;  // 6
+  EEPROMData.lastFrequencies[11][0] = 70300000L;  // 4
 #else
-  EEPROMData.lastFrequencies[0][0] = 3560000L;   // 80 CW
-  EEPROMData.lastFrequencies[1][0] = 5300000L;   // 60 CW
-  EEPROMData.lastFrequencies[2][0] = 7200000L;   // 40
-  EEPROMData.lastFrequencies[3][0] = 10100000L;  // 30
-  EEPROMData.lastFrequencies[4][0] = 14060000L;  // 20
-  EEPROMData.lastFrequencies[5][0] = 18096000L;  // 17
-  EEPROMData.lastFrequencies[6][0] = 21060000L;  // 15
-  EEPROMData.lastFrequencies[7][0] = 24906000L;  // 12
-  EEPROMData.lastFrequencies[8][0] = 28060000L;  // 10
-  EEPROMData.lastFrequencies[9][0] = 50100000L;
+  EEPROMData.lastFrequencies[0][0] = 1850000L;   // 160 CW
+  EEPROMData.lastFrequencies[1][0] = 3560000L;   // 80 CW
+  EEPROMData.lastFrequencies[2][0] = 5300000L;   // 60 CW
+  EEPROMData.lastFrequencies[3][0] = 7200000L;   // 40
+  EEPROMData.lastFrequencies[4][0] = 10100000L;  // 30
+  EEPROMData.lastFrequencies[5][0] = 14060000L;  // 20
+  EEPROMData.lastFrequencies[6][0] = 18096000L;  // 17
+  EEPROMData.lastFrequencies[7][0] = 21060000L;  // 15
+  EEPROMData.lastFrequencies[8][0] = 24906000L;  // 12
+  EEPROMData.lastFrequencies[9][0] = 28060000L;  // 10
+  EEPROMData.lastFrequencies[10][0] = 50100000L;  // 6
+  EEPROMData.lastFrequencies[11][0] = 70300000L;  // 4
 #endif
 
-  EEPROMData.lastFrequencies[0][1] = 3560000L;   // 80 CW
-  EEPROMData.lastFrequencies[1][1] = 5300000L;   // 60 CW
-  EEPROMData.lastFrequencies[2][1] = 7200000L;   // 40
-  EEPROMData.lastFrequencies[3][1] = 10100000L;  // 30
-  EEPROMData.lastFrequencies[4][1] = 14060000L;  // 20
-  EEPROMData.lastFrequencies[5][1] = 18096000L;  // 17
-  EEPROMData.lastFrequencies[6][1] = 21060000L;  // 15
-  EEPROMData.lastFrequencies[7][1] = 24906000L;  // 12
-  EEPROMData.lastFrequencies[8][1] = 28060000L;  // 10
-  EEPROMData.lastFrequencies[9][1] = 50100000L;
+  EEPROMData.lastFrequencies[0][1] = 1850000L;   // 160 CW
+  EEPROMData.lastFrequencies[1][1] = 3560000L;   // 80 CW
+  EEPROMData.lastFrequencies[2][1] = 5300000L;   // 60 CW
+  EEPROMData.lastFrequencies[3][1] = 7200000L;   // 40
+  EEPROMData.lastFrequencies[4][1] = 10100000L;  // 30
+  EEPROMData.lastFrequencies[5][1] = 14060000L;  // 20
+  EEPROMData.lastFrequencies[6][1] = 18096000L;  // 17
+  EEPROMData.lastFrequencies[7][1] = 21060000L;  // 15
+  EEPROMData.lastFrequencies[8][1] = 24906000L;  // 12
+  EEPROMData.lastFrequencies[9][1] = 28060000L;  // 10
+  EEPROMData.lastFrequencies[10][1] = 50100000L;  // 6
+  EEPROMData.lastFrequencies[11][1] = 70300000L;  // 4
 
 
   EEPROMData.centerFreq = 7150000;
