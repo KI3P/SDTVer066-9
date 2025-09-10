@@ -37,7 +37,9 @@ void printBPFState(){
 
 void setBPFBand(int currentBand) {
   switch (currentBand){
-
+    case BAND_160M:
+      BPF_GPAB_state = BPF_BAND_160M;
+      break;
     case BAND_80M:
       BPF_GPAB_state = BPF_BAND_80M;
       break;
