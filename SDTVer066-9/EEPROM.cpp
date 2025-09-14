@@ -219,6 +219,123 @@ FLASHMEM void EEPROMRead() {
   
 }
 
+/**
+ * Copy the values from the EEPROMData struct into the variables
+ */
+FLASHMEM void EEPROMSync() {
+  AGCMode = EEPROMData.AGCMode;
+  audioVolume = EEPROMData.audioVolume;  // 4 bytes
+  rfGainAllBands = EEPROMData.rfGainAllBands;
+  spectrumNoiseFloor = EEPROMData.spectrumNoiseFloor;  // AFP 09-26-22
+  tuneIndex = EEPROMData.tuneIndex;
+  stepFineTune = EEPROMData.stepFineTune;
+  transmitPowerLevel = EEPROMData.powerLevel;
+  xmtMode = EEPROMData.xmtMode;                // AFP 09-26-22
+  nrOptionSelect = EEPROMData.nrOptionSelect;  // 1 byte
+  currentScale = EEPROMData.currentScale;
+  spectrum_zoom = EEPROMData.spectrum_zoom;
+  spectrum_display_scale = EEPROMData.spectrum_display_scale;  // 4 bytes
+
+  CWFilterIndex = EEPROMData.CWFilterIndex;  // Off
+  paddleDit = EEPROMData.paddleDit;
+  paddleDah = EEPROMData.paddleDah;
+  decoderFlag = EEPROMData.decoderFlag;
+  keyType = EEPROMData.keyType;                  // straight key = 0, keyer = 1
+  currentWPM = EEPROMData.currentWPM;            // 4 bytes
+  sidetoneVolume = EEPROMData.sidetoneVolume;    // 4 bytes
+  cwTransmitDelay = EEPROMData.cwTransmitDelay;  // 4 bytes
+
+  activeVFO = EEPROMData.activeVFO;          // 2 bytes
+  freqIncrement = EEPROMData.freqIncrement;  // 4 bytes
+  freqCorrectionFactor = EEPROMData.freqCorrectionFactor;
+
+  currentBand = EEPROMData.currentBand;                        // 4 bytes
+  currentBandA = EEPROMData.currentBandA;                      // 4 bytes
+  currentBandB = EEPROMData.currentBandB;                      // 4 bytes
+  currentFreqA = EEPROMData.lastFrequencies[currentBandA][0];  // JJP 7/17/23
+  currentFreqB = EEPROMData.lastFrequencies[currentBandB][1];  // JJP 7/17/23
+
+  for (int i = 0; i < EQUALIZER_CELL_COUNT; i++) {
+    recEQ_Level[i] = EEPROMData.equalizerRec[i];  // 4 bytes each
+  }
+  for (int i = 0; i < EQUALIZER_CELL_COUNT; i++) {
+    xmtEQ_Level[i] = EEPROMData.equalizerXmt[i];
+  }
+
+  currentMicThreshold = EEPROMData.currentMicThreshold;  // AFP 09-22-22
+  currentMicCompRatio = EEPROMData.currentMicCompRatio;
+  currentMicAttack = EEPROMData.currentMicAttack;
+  currentMicRelease = EEPROMData.currentMicRelease;
+  currentMicGain = EEPROMData.currentMicGain;
+
+  //  Note: switch values are read and written to EEPROM only
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) {
+    switchThreshholds[i] = EEPROMData.switchValues[i];
+  }
+
+  LPFcoeff = EEPROMData.LPFcoeff;  // 4 bytes
+  NR_PSI = EEPROMData.NR_PSI;      // 4 bytes
+  NR_alpha = EEPROMData.NR_alpha;  // 4 bytes
+  NR_beta = EEPROMData.NR_beta;    // 4 bytes
+  omegaN = EEPROMData.omegaN;      // 4 bytes
+  pll_fmax = EEPROMData.pll_fmax;  // 4 bytes
+
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) {
+    powerOutCW[i] = EEPROMData.powerOutCW[i];
+    powerOutSSB[i] = EEPROMData.powerOutSSB[i];
+    CWPowerCalibrationFactor[i] = EEPROMData.CWPowerCalibrationFactor[i];
+    SSBPowerCalibrationFactor[i] = EEPROMData.SSBPowerCalibrationFactor[i];
+    IQAmpCorrectionFactor[i] = EEPROMData.IQAmpCorrectionFactor[i];
+    IQPhaseCorrectionFactor[i] = EEPROMData.IQPhaseCorrectionFactor[i];
+    IQXAmpCorrectionFactor[i] = EEPROMData.IQXAmpCorrectionFactor[i];
+    IQXPhaseCorrectionFactor[i] = EEPROMData.IQXPhaseCorrectionFactor[i];
+    IQXRecAmpCorrectionFactor[i] = EEPROMData.IQXRecAmpCorrectionFactor[i];
+    IQXRecPhaseCorrectionFactor[i] = EEPROMData.IQXRecPhaseCorrectionFactor[i];
+    XAttenCW[i] = EEPROMData.XAttenCW[i];
+    XAttenSSB[i] = EEPROMData.XAttenSSB[i];
+    RAtten[i] = EEPROMData.RAtten[i];
+    antennaSelection[i] = EEPROMData.antennaSelection[i];
+    SWR_F_SlopeAdj[i] = EEPROMData.SWR_F_SlopeAdj[i];
+    SWR_R_SlopeAdj[i] = EEPROMData.SWR_R_SlopeAdj[i];
+    SWR_R_Offset[i] = EEPROMData.SWR_R_Offset[i];
+    SWR_F_Offset[i] = EEPROMData.SWR_F_Offset[i];
+  }
+  for (int i = 0; i < MAX_FAVORITES; i++) {
+    favoriteFrequencies[i] = EEPROMData.favoriteFreqs[i];
+  }
+
+  // V12HW
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) {
+    lastFrequencies[i][0] = EEPROMData.lastFrequencies[i][0];
+    lastFrequencies[i][1] = EEPROMData.lastFrequencies[i][1];
+  }
+
+  centerFreq = EEPROMData.lastFrequencies[currentBand][activeVFO];  // 4 bytes
+  TxRxFreq = centerFreq;                                            // Need to assign TxRxFreq here or numerous subtle frequency bugs will happen.  KF5N August 7, 2023
+
+  //strncpy(EEPROMData.mapFileName, MAP_FILE_NAME, 50);  KF5N
+  strncpy(mapFileName, EEPROMData.mapFileName, 50);     // KF5N
+  strncpy(myCall, EEPROMData.myCall, 10);               // KF5N
+  strncpy(myTimeZone, EEPROMData.myTimeZone, 10);       // KF5N
+  freqSeparationChar = EEPROMData.separationCharacter;  //   JJP  7/25/23  KF5N
+
+  paddleFlip = EEPROMData.paddleFlip;            //   JJP  7/27/23.  Was setting to symbolic constant PADDLE_FLIP.  KF5N August 8, 2023
+  sdCardPresent = EEPROMData.sdCardPresent = 0;  //   JJP  7/27/23
+
+  myLat = EEPROMData.myLat;
+  myLong = EEPROMData.myLong;
+  for (int i = 0; i < NUMBER_OF_BANDS; i++) {
+    currentNoiseFloor[i] = EEPROMData.currentNoiseFloor[i];
+  }
+  compressorFlag = EEPROMData.compressorFlag;  // JJP 8/28/23
+  receiveEQFlag = EEPROMData.receiveEQFlag;
+  xmitEQFlag = EEPROMData.xmitEQFlag;
+  CWToneIndex = EEPROMData.CWToneIndex;
+
+  transmitPowerLevelCW = EEPROMData.TransmitPowerLevelCW;    // Power level factors by mode
+  transmitPowerLevelSSB = EEPROMData.TransmitPowerLevelSSB;  // Power level factors by mode
+}
+
 
 /*****
   Purpose: To save the configuration data (working variables) to EEPROM

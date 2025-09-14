@@ -9,6 +9,7 @@ const char *filename = "/config.txt";
 // Loads the EEPROMData configuration from a file
 FLASHMEM void loadConfiguration(const char *filename, config_t &EEPROMData) {
   // Open file for reading
+  Serial.println("Loading file "+String(filename));
   File file = SD.open(filename);
 
   // Allocate a temporary JsonDocument

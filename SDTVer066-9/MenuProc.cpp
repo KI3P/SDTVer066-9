@@ -1002,6 +1002,7 @@ int EEPROMOptions() {
     case 5:
 #if defined(USE_JSON)
       loadConfiguration(filename, EEPROMData);
+      EEPROMSync();
       EEPROMWrite();
 #else
       CopySDToEEPROM();  // Copy from SD to EEPROM

@@ -185,6 +185,7 @@ void CalibrateFrequency() {
     if (freqCalType != 1) {
       freqCorrectionFactorOld = EEPROMData.freqCorrectionFactor;
       EEPROMData.freqCorrectionFactor = (int)GetEncoderValueLiveFreq(-200000, 200000, EEPROMData.freqCorrectionFactor, incrementSAM, (char *)"Freq Cal: ", 3);
+      freqCorrectionFactor = EEPROMData.freqCorrectionFactor;
     }  //==ongoing process
     if (EEPROMData.freqCorrectionFactor != freqCorrectionFactorOld) {
       calChrono.restart(0);
@@ -300,6 +301,7 @@ void CalibrateFrequency() {
           freqCalType = -1;
           EEPROMData.freqCorrectionFactor = corrFactorCalc;
         }
+        freqCorrectionFactor = EEPROMData.freqCorrectionFactor;
         break;
 
       case (2):  //Time plot Run
@@ -1981,8 +1983,9 @@ void CW_PA_Calibrate() {
           atts[k] = (float)k / 2;
           adcs[k] = ADC0 / NPF;
           Serial.print(atts[k],1); Serial.print(","); Serial.print(adcs[k],1);
-
-          linear2DRegression->addPoint(-atts[k],adcs[k]);
+          if (isnormal(adcs[k])){
+            linear2DRegression->addPoint(-atts[k],adcs[k]);
+          }
           float c = linear2DRegression->calculate(0);
           float m = -1*(linear2DRegression->calculate(-1)-c);
           Serial.print(","); Serial.println(m,2);
@@ -2365,8 +2368,9 @@ void DoSWRCal() {
           Pf[k] = P0 / NPF;
           Serial.print(atts[k],1); Serial.print(","); Serial.print(adcs[k],1);
           //Serial.print(","); Serial.println(Pf[k],1);
-
-          linear2DRegression->addPoint(-atts[k],adcs[k]);
+          if (isnormal(adcs[k])){
+            linear2DRegression->addPoint(-atts[k],adcs[k]);
+          }
           float c = linear2DRegression->calculate(0);
           float m = -1*(linear2DRegression->calculate(-1)-c);
           Serial.print(","); Serial.println(m,2);

@@ -2401,6 +2401,7 @@ void DrawAudioSpectContainer();
 void DoSWR();
 int EEPROMOptions();
 void EEPROMRead();
+void EEPROMSync();
 //void EEPROMSaveDefaults();
 void EEPROMSaveDefaults2();
 void EEPROMShow();
